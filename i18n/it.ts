@@ -38,11 +38,15 @@ export const it = {
       'Progettiamo e stampiamo oggetti da esposizione, decor e regali su misura. Quello che vedi qui sotto è già pronto da spedire.',
     ctaPrimaria: 'Vedi il catalogo',
     ctaSecondaria: 'Fai fare il tuo',
-    scorri: 'Scorri',
+    scorri: 'Scendi',
     saltaAnimazione: 'Salta l’animazione',
+    istruzione: 'Scorri per stampare',
   },
 
   sequenza: {
+    inStampa: 'In stampa',
+    stampato: 'Stampato',
+    strati: 'strati',
     prossimo: 'Prossimo',
     aFuoco: 'In evidenza',
     vediProdotto: 'Vedi il prodotto',
@@ -118,6 +122,12 @@ export const it = {
     piva: 'P.IVA [DA INSERIRE]',
     sede: '[SEDE LEGALE DA INSERIRE]',
     diritti: 'Tutti i diritti riservati',
+  },
+
+  profondita: {
+    etichetta: 'Profondità nella sezione',
+    mm: 'mm',
+    superficie: 'Superficie',
   },
 
   a11y: {

@@ -39,7 +39,7 @@ export const PRODUCTS: readonly Product[] = [
     materiali: ['pla-opaco', 'pla-seta', 'petg'],
     tempiProduzioneGiorni: [3, 5],
     disponibileSubito: true,
-    modello: { glb: '/models/vaso-onda.glb', poster: '/posters/vaso-onda.webp', scala: 1, segnaposto: { kind: 'lathe', seed: 11, altezza: 1.4 } },
+    modello: { colore: { materiale: 'pla-opaco', colore: 'terracotta' }, glb: '/models/vaso-onda.glb', poster: '/posters/vaso-onda.webp', scala: 1, segnaposto: { kind: 'lathe', seed: 11, altezza: 1.4 } },
     ordine: 1,
   },
   {
@@ -62,7 +62,7 @@ export const PRODUCTS: readonly Product[] = [
     materiali: ['pla-opaco', 'pla-seta'],
     tempiProduzioneGiorni: [3, 5],
     disponibileSubito: true,
-    modello: { glb: '/models/portacandele-eclissi.glb', poster: '/posters/portacandele-eclissi.webp', scala: 1, segnaposto: { kind: 'shell', seed: 23, altezza: 1.2 } },
+    modello: { colore: { materiale: 'pla-opaco', colore: 'grafite' }, glb: '/models/portacandele-eclissi.glb', poster: '/posters/portacandele-eclissi.webp', scala: 1, segnaposto: { kind: 'shell', seed: 23, altezza: 1.2 } },
     ordine: 2,
   },
   {
@@ -82,7 +82,7 @@ export const PRODUCTS: readonly Product[] = [
     materiali: ['pla-opaco'],
     tempiProduzioneGiorni: [4, 6],
     disponibileSubito: true,
-    modello: { glb: '/models/fermalibri-faglia.glb', poster: '/posters/fermalibri-faglia.webp', scala: 1, segnaposto: { kind: 'prism', seed: 37, altezza: 1.5 } },
+    modello: { colore: { materiale: 'pla-opaco', colore: 'salvia' }, glb: '/models/fermalibri-faglia.glb', poster: '/posters/fermalibri-faglia.webp', scala: 1, segnaposto: { kind: 'prism', seed: 37, altezza: 1.5 } },
     ordine: 3,
   },
 
@@ -107,7 +107,7 @@ export const PRODUCTS: readonly Product[] = [
     materiali: ['petg', 'pla-opaco'],
     tempiProduzioneGiorni: [5, 7],
     disponibileSubito: true,
-    modello: { glb: '/models/lampada-duna.glb', poster: '/posters/lampada-duna.webp', scala: 1, segnaposto: { kind: 'lathe', seed: 53, altezza: 1.8 } },
+    modello: { colore: { materiale: 'petg', colore: 'ambra' }, glb: '/models/lampada-duna.glb', poster: '/posters/lampada-duna.webp', scala: 1, segnaposto: { kind: 'lathe', seed: 53, altezza: 1.8 } },
     ordine: 4,
   },
   {
@@ -130,7 +130,7 @@ export const PRODUCTS: readonly Product[] = [
     materiali: ['petg', 'pla-opaco'],
     tempiProduzioneGiorni: [4, 6],
     disponibileSubito: true,
-    modello: { glb: '/models/paralume-nimbo.glb', poster: '/posters/paralume-nimbo.webp', scala: 1, segnaposto: { kind: 'shell', seed: 67, altezza: 1.6 } },
+    modello: { colore: { materiale: 'pla-opaco', colore: 'notte' }, glb: '/models/paralume-nimbo.glb', poster: '/posters/paralume-nimbo.webp', scala: 1, segnaposto: { kind: 'shell', seed: 67, altezza: 1.6 } },
     ordine: 5,
   },
 
@@ -155,7 +155,7 @@ export const PRODUCTS: readonly Product[] = [
     materiali: ['pla-opaco', 'pla-seta'],
     tempiProduzioneGiorni: [2, 4],
     disponibileSubito: true,
-    modello: { glb: '/models/portapenne-basalto.glb', poster: '/posters/portapenne-basalto.webp', scala: 1, segnaposto: { kind: 'prism', seed: 83, altezza: 1.1 } },
+    modello: { colore: { materiale: 'pla-seta', colore: 'rame' }, glb: '/models/portapenne-basalto.glb', poster: '/posters/portapenne-basalto.webp', scala: 1, segnaposto: { kind: 'prism', seed: 83, altezza: 1.1 } },
     ordine: 6,
   },
   {
@@ -175,7 +175,7 @@ export const PRODUCTS: readonly Product[] = [
     materiali: ['pla-seta', 'pla-opaco', 'resina'],
     tempiProduzioneGiorni: [2, 4],
     disponibileSubito: true,
-    modello: { glb: '/models/fermacarte-quarzo.glb', poster: '/posters/fermacarte-quarzo.webp', scala: 1, segnaposto: { kind: 'knot', seed: 97, altezza: 0.8 } },
+    modello: { colore: { materiale: 'pla-seta', colore: 'oro' }, glb: '/models/fermacarte-quarzo.glb', poster: '/posters/fermacarte-quarzo.webp', scala: 1, segnaposto: { kind: 'knot', seed: 97, altezza: 0.8 } },
     ordine: 7,
   },
 
@@ -200,7 +200,7 @@ export const PRODUCTS: readonly Product[] = [
     materiali: ['resina', 'pla-opaco'],
     tempiProduzioneGiorni: [6, 9],
     disponibileSubito: false,
-    modello: { glb: '/models/targa-orizzonte.glb', poster: '/posters/targa-orizzonte.webp', scala: 1, segnaposto: { kind: 'plate', seed: 103, altezza: 0.9 } },
+    modello: { colore: { materiale: 'resina', colore: 'pietra' }, glb: '/models/targa-orizzonte.glb', poster: '/posters/targa-orizzonte.webp', scala: 1, segnaposto: { kind: 'plate', seed: 103, altezza: 0.9 } },
     ordine: 8,
   },
   {
@@ -223,7 +223,7 @@ export const PRODUCTS: readonly Product[] = [
     materiali: ['resina', 'pla-seta', 'pla-opaco'],
     tempiProduzioneGiorni: [5, 8],
     disponibileSubito: false,
-    modello: { glb: '/models/portachiavi-meridiana.glb', poster: '/posters/portachiavi-meridiana.webp', scala: 1, segnaposto: { kind: 'plate', seed: 109, altezza: 0.5 } },
+    modello: { colore: { materiale: 'pla-seta', colore: 'perla' }, glb: '/models/portachiavi-meridiana.glb', poster: '/posters/portachiavi-meridiana.webp', scala: 1, segnaposto: { kind: 'plate', seed: 109, altezza: 0.5 } },
     ordine: 9,
   },
   {
@@ -246,7 +246,7 @@ export const PRODUCTS: readonly Product[] = [
     materiali: ['pla-opaco', 'pla-seta'],
     tempiProduzioneGiorni: [6, 9],
     disponibileSubito: false,
-    modello: { glb: '/models/cornice-soglia.glb', poster: '/posters/cornice-soglia.webp', scala: 1, segnaposto: { kind: 'plate', seed: 127, altezza: 1.3 } },
+    modello: { colore: { materiale: 'pla-opaco', colore: 'notte' }, glb: '/models/cornice-soglia.glb', poster: '/posters/cornice-soglia.webp', scala: 1, segnaposto: { kind: 'plate', seed: 127, altezza: 1.3 } },
     ordine: 10,
   },
 ] as const

@@ -64,6 +64,15 @@ export interface Placeholder {
 }
 
 export interface ProductModel {
+  /**
+   * Materiale e colore con cui il pezzo viene mostrato in scena.
+   *
+   * Non è un dettaglio estetico: la scena ha un fondo **chiaro**, e un pezzo
+   * in "bianco gesso" su uno strato di gesso semplicemente non si vede. Il
+   * colore di presentazione è una scelta di ogni prodotto, e va scelto in
+   * contrasto con lo strato su cui compare.
+   */
+  colore: { materiale: string; colore: string }
   /** Percorso sotto /public/models. Se il file non esiste si usa il segnaposto. */
   glb: string
   /** Immagine di fallback, stesso inquadramento del render 3D. */

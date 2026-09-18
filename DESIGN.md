@@ -1,9 +1,19 @@
 # DESIGN.md — Direzione creativa
 
-**Stato: v2.** Direzione: *Crepuscolo* → **"Alba"** · brand **STRATO** · hero **C**.
-La §4 (atmosfera) e la §5 (tipografia) sono state riscritte dopo la revisione
-della Fase 1: il gradiente lineare e il carattere Archivo sono stati sostituiti.
-Il registro storico della v1 resta nelle §1–§3, che non sono cambiate.
+**Stato: v3 — "Stratigrafia".** Brand **STRATO**.
+
+Le versioni v1 (*Crepuscolo*) e v2 (*Alba*) sono state scartate dopo revisione.
+Entrambe erano cieli notturni con oggetti sospesi: belle, ma **il concetto era
+decorazione**. Le linee di stampa erano un motivo grafico sopra un sito che
+avrebbe funzionato identico senza di esse.
+
+La v3 riparte da una richiesta precisa: *"imposta tutto sul concetto di strato,
+dal funzionamento del sito al layout"*. Qui lo strato non è un tema applicato
+sopra: è il **meccanismo**. Chi volesse togliere gli strati da questa versione
+dovrebbe riscrivere il sito, non ritoccare una palette.
+
+La §1 (analisi delle reference) e la §3 (il nome) restano dalla v1: sono ancora
+gli input. Tutto il resto è nuovo.
 Basata su: 3 reference allegate in chat + analisi di `shop.6tm-magazine.com` + i dati che mi hai confermato.
 
 ---
@@ -71,19 +81,43 @@ Prendo la disciplina che alle tre immagini manca: **un messaggio per blocco**, m
 
 ---
 
-## 2. ⚠️ Un conflitto da risolvere, prima di tutto il resto
+## 2. Il principio: lo scroll è la testina
 
-Tu hai scelto **"Dark studio / tech"**, che io avevo descritto come *fondo scuro, luci da studio drammatiche, accento fluo, tipografia monospace*.
+> **Lo scroll non muove una camera davanti a oggetti finiti. Deposita.**
+> Ogni prodotto si stampa mentre lo raggiungi, strato dopo strato. Se torni
+> indietro, si s-stampa.
 
-Le tue reference dicono un'altra cosa: **nessuna delle tre ha un fondo nero**. Sono cieli al tramonto, salvia chiaro, deserto dorato. L'atmosfera è **ambientale e morbida**, non da camera oscura. E il vetro traslucido — l'elemento più forte e più ricorrente — su nero puro semplicemente sparisce: il glassmorphism ha bisogno di qualcosa dietro da sfocare.
+Non è un'animazione che parte e finisce: è una **funzione della posizione**.
+Fermi il dito a metà e il pezzo resta a metà. È la regola 2 del motion — *il
+movimento obbedisce al dito* — portata alle sue conseguenze invece di essere
+dichiarata e poi aggirata.
 
-**Non li considero inconciliabili, e non è un problema: è una terza direzione, migliore delle due.**
+La stessa funzione guida tre cose insieme, e leggono **lo stesso numero**:
 
-> ### "Crepuscolo" — scuro come atmosfera, non come vuoto
-> Il fondo resta scuro (il tuo *dark*), ma è un **cielo al crepuscolo**: indigo profondo in alto che degrada verso un **orizzonte ambra** in basso. Il rigore tecnico (il tuo *tech*) sta nella **tipografia** e nei **dati** — colonne di specifiche in maiuscolo, numerali d'indice, misure reali — non nel colore.
-> Così: i pannelli di vetro hanno un gradiente da sfocare e funzionano · il prodotto stampato si staglia illuminato · resta scuro, premium e notturno · e le tue reference sono rispettate.
+1. **l'oggetto 3D**, tramite un piano di taglio la cui quota sale;
+2. **il testo della scheda**, tramite una maschera a gradini che lo scopre dal
+   basso (`--deposito`);
+3. **la linea della testina**, che è dove il deposito sta arrivando adesso.
 
-**Se invece intendevi davvero il nero assoluto da studio fotografico, dimmelo**: è un'altra direzione, legittima, ma allora le tre reference vanno messe da parte e il glassmorphism con loro. Tutto ciò che segue assume "Crepuscolo".
+Due curve diverse li farebbero arrivare sfasati di poco, ed è il tipo di
+difetto che si nota senza saper dire perché.
+
+### Le tre conseguenze sul funzionamento del sito
+
+**La pagina è una carota geologica.** Si comincia in superficie, nella luce, e
+scendendo si attraversano materiali sempre più profondi fino al basalto del
+footer. Il colore di fondo non è un tema: è **lo strato che stai attraversando**,
+e cambia in continuo mentre scorri.
+
+**La posizione è una profondità in millimetri.** Non una percentuale, non una
+barra: `000 mm` … `240 mm`, la stessa unità con cui si misura l'altezza di una
+stampa. L'indicatore laterale è la colonna di un log di sondaggio, e ogni tacca
+è anche un salto a quello strato.
+
+**La camera non viaggia: è la linea che scorre.** Nelle versioni precedenti la
+camera attraversava un paesaggio — generico, ed è ciò che fa qualunque sito 3D.
+Qui la camera è fissa e frontale, come quella puntata su un piatto di stampa, e
+i pezzi le passano davanti uno alla volta.
 
 ---
 
@@ -112,317 +146,233 @@ Da verificare prima di procedere: disponibilità del dominio e ricerca marchi. N
 
 ---
 
-## 4. Atmosfera — "Alba" *(riscritta, v2)*
+## 4. Materia — la sezione stratigrafica
 
-### 4.0 Perché il gradiente lineare non funzionava
+Non è una palette: è una **sezione**. I nomi sono di materiali, non di colori, e
+non per vezzo — terracotta, sabbia, ocra e ardesia sono colori di filamento che
+produciamo davvero. La palette del sito e quella del catalogo sono la stessa cosa.
 
-La v1 usava un `linear-gradient` da indigo ad ambra, con l'ambra negli ultimi
-punti percentuali. Non funzionava, e il motivo è preciso:
+Fonte di verità: `data/strati.ts`.
 
-- **Un gradiente lineare non ha una sorgente.** Legge come un filtro applicato
-  sopra la pagina, non come luce che viene da un posto. Il cervello non ci trova
-  nessuna spiegazione fisica, e quindi non ci crede.
-- **L'ambra in fondo allo schermo veniva coperta dalla scena 3D.** Il piano su
-  cui poggia la composizione taglia lo schermo all'altezza dell'occhio della
-  camera — circa a metà. Tutto ciò che il CSS metteva sotto quella quota era
-  semplicemente invisibile.
+| Quota | Strato | Hex | Testo | Contrasto |
+|---|---|---|---|---|
+| 000 mm | Gesso | `#EDE7DA` | inchiostro `#17161A` | 14,0:1 |
+| 040 mm | Sabbia | `#E0D3B8` | inchiostro | 11,7:1 |
+| 096 mm | Ocra | `#CFA65B` | inchiostro | 7,4:1 |
+| 152 mm | Terracotta | `#A4542F` | carta `#F7F3EA` | 5,6:1 |
+| 196 mm | Ardesia | `#3F464F` | carta | 9,1:1 |
+| 240 mm | Basalto | `#23262B` | carta | 13,4:1 |
 
-### 4.1 Il principio nuovo: c'è un sole, e tutto il resto è la sua conseguenza
+**L'inversione avviene fra ocra e terracotta, e il codice non può sbagliarla:**
+ogni strato dichiara il proprio colore di testo in `data/strati.ts`, e
+`Stratigrafia.tsx` lo scrive su `:root`. Nessun componente decide da sé se è su
+uno strato chiaro o profondo — lo sa perché lo strato glielo dice. È così che il
+contrasto non può essere sbagliato in un punto solo. L'inversione è **di scatto**,
+a metà del passaggio: un testo che sfuma da inchiostro a carta passa per un
+grigio illeggibile.
 
-> **Il sole sta appena sotto l'orizzonte, al centro.** Non lo si vede: si vede
-> quello che fa. Il nucleo bianco-caldo sulla linea, il bagliore che si allarga,
-> la brace che sale e si raffredda, il cielo che diventa notte in alto, le
-> stelle che sopravvivono solo dove la luce non arriva.
+### L'ugello — l'unico accento
 
-Non è un fondo: è **un'ora del giorno**. Ed è l'ora giusta per questo marchio —
-il momento in cui qualcosa nasce.
+`#FF4D1F`. Non è un colore d'interfaccia generico: è la **temperatura
+dell'ugello**. Compare dove qualcosa sta per essere prodotto — la CTA del
+preventivo, la linea della testina, l'istruzione "scorri per stampare", lo strato
+corrente nell'indicatore. Mai decorativo.
 
-### 4.2 ⚠️ Il vincolo che tiene insieme CSS e 3D
+### Lo spessore dello strato — `--strato: 4px`
 
-> **La linea dell'orizzonte sta al 49% dell'altezza in orizzontale, al 32% in
-> verticale.** Sopra c'è cielo, sotto c'è terreno.
+La misura più importante del sistema. Ogni linea, ogni passo di griglia, ogni
+gradino delle maschere di deposito, il raggio dei controlli e l'offset delle
+ombre sono multipli di questo valore. Cambiarlo cambia la grana di tutto il sito.
 
-Non è una scelta estetica: è la quota a cui il piano di stampa 3D taglia lo
-schermo, e dipende dall'inquadratura della camera. Il cielo CSS e il piano 3D
-**devono coincidere**, altrimenti compare una banda piatta dove finisce l'uno e
-comincia l'altro — il difetto più evidente della prima versione.
+### Niente vetro, niente angoli morbidi
 
-È scritto come variabile CSS `--orizzonte` e commentato in tre punti del codice.
-**Cambiare le chiavi della camera in `percorso.ts` significa ricontrollare
-quella quota.**
+Il glassmorphism delle v1 e v2 è stato eliminato: **il vetro non c'entra niente
+con un oggetto stampato**. I pannelli sono **fogli di carta appoggiati** — carta
+piena, spigoli vivi, contorno a una linea, e un'ombra che è un offset secco di
+due strati, non una sfumatura. Il solo raggio ammesso vale uno strato.
 
-### 4.3 I sette strati del cielo
+### Il colore del pezzo in scena
 
-Tutti in CSS puro: **visibili a 0 ms**, prima che una riga di JavaScript venga
-eseguita, e identici nel fallback senza WebGL.
-
-| # | Strato | Ruolo |
-|---|---|---|
-| 1 | Nucleo `#ffe6b8` — ellisse strettissima sulla linea | Il punto più caldo. È il sole. |
-| 2 | Bagliore `#ffc46b` | La luce che lo circonda |
-| 3 | Alone `#b8552f` | Si allarga sopra la linea, mai sotto |
-| 4 | Brace `#5e2437` | Impedisce lo stacco netto tra caldo e freddo |
-| 5 | Due nebulose fredde agli angoli alti | Un cielo piatto non esiste |
-| 6 | Terreno | Sotto la linea la luce cade in fretta, fino a `#07050f` |
-| 7 | Base notturna `#05040f` → `#2c1638` | Il cielo sopra la linea |
-
-**Le stelle** sono un SVG in linea: nessuna richiesta di rete, presenti anche nel
-fallback. Si diradano scendendo, perché la luce dell'orizzonte le cancella.
-**La vignettatura** chiude la composizione verso il centro, dove sta l'oggetto.
-
-### 4.4 Cosa aggiunge il 3D all'atmosfera
-
-Il cielo CSS è il fondo; il WebGL gli dà **spessore**. Senza questi quattro
-elementi gli oggetti sono sagome sospese nel nulla, e il nulla non ha profondità.
-
-| Elemento | Cosa fa | Profilo |
-|---|---|---|
-| **Piano di stampa** riflettente | Dà un pavimento allo spazio, raddoppia gli oggetti nel riflesso, e la sua griglia è il reticolo di uno slicer | riflettente su *alto*, opaco su *medio* |
-| **Mappa d'ambiente** con `Lightformer` | I materiali riflettono qualcosa. Senza, una plastica satinata sembra gesso. Costruita in scena: **zero byte scaricati**, contro i 2-4 MB di una HDRI | alto 256 px · medio 128 px |
-| **Raggi dall'orizzonte** | Rendono visibile l'aria tra la camera e l'oggetto | alto e medio |
-| **Polvere in sospensione** | Parallasse in primo piano, che le stelle di sfondo non possono dare | 90 · 40 · 0 granelli |
-| **Nebbia** | Lega gli oggetti lontani al colore del terreno | sempre |
-| **Bloom** con soglia 0.86 | Si accende solo ciò che è già incandescente. Con una soglia bassa la scena diventa lattiginosa | solo *alto* |
-
-Gli oggetti restano **sospesi molto sopra il piano**: non ci appoggiano. L'aria
-in mezzo è ciò che rende il riflesso una scelta e non una scorciatoia.
-
-### 4.5 Testo, vetro, accenti
-
-| Token | Hex | Uso |
-|---|---|---|
-| `--color-ink` | `#f6f3fa` | Titoli, corpo |
-| `--color-ink-soft` | `#b3a9c4` | Meta, didascalie |
-| `--color-ink-muted` | `#7a7089` | Note legali, disattivato |
-| `--color-accent` | `#f5c26b` | **Accento primario.** Prezzo a fuoco, focus ring, linea di stampa. È la luce dell'orizzonte: viene dalla scena, non è appiccicato sopra. |
-| `--color-live` | `#5fe3d8` | Solo ciò che è interattivo **adesso**. Mai decorativo. |
-| `--color-hot` | `#ff6b35` | Solo **"su richiesta"** |
-
-**Il vetro** è un velo **scuro**, non chiaro (`rgb(13 10 26 / 0.74)`): sopra un
-oggetto illuminato un velo bianco non produce contrasto. Mai vetro sopra vetro.
-
-**Il velo di leggibilità** è nuovo in v2 ed è una conseguenza diretta
-dell'arricchimento: con un cielo all'alba e un pavimento che riflette, il fondo
-dietro il titolo cambia da un momento all'altro. Un gradiente scuro dal bordo
-sinistro protegge la colonna di testo senza toccare la scena. La regola
-"la leggibilità vince sull'effetto" vale anche per il testo sopra il 3D, non
-solo per i pannelli.
-
-**Il colore del prodotto** resta la cosa più satura dello schermo: è per questo
-che l'interfaccia è quasi acromatica. Se l'interfaccia fosse colorata, il
-selettore materiale perderebbe tutta la sua forza — che è esattamente la
-funzione che fa vendere.
+La scena ha un fondo **chiaro**: un pezzo in "bianco gesso" su uno strato di
+gesso non si vede. Ogni prodotto dichiara il proprio colore di presentazione in
+`modello.colore`, scelto in contrasto con lo strato su cui compare. Non è un
+dettaglio estetico, è un requisito di leggibilità — ed è stato il primo difetto
+trovato al primo render della v3.
 
 ---
 
 ## 5. Tipografia
 
-**Tre famiglie**, tutte open source, self-hosted in `woff2` variabile e sottoinsiemate al latino. Niente chiamate a Google Fonts: costano una risoluzione DNS e una connessione sul percorso critico dell'LCP.
+Tre famiglie, tre lavori distinti. Nessuna decorativa.
 
-| Ruolo | Famiglia | Da dove viene | Perché |
-|---|---|---|---|
-| **Display** | `Syne` (400/600/700/800) | Ref A (sans geometrico pesante) | **Sostituisce Archivo in v2.** Archivo era corretto e anonimo: un grotesque che non si distingue da altri dieci. Syne (Bonjour Monde, open source) ha proporzioni volutamente anomale — la `O` è quasi un cerchio perfetto, la `A` ha il vertice tagliato, gli spessori cambiano dove non te lo aspetti. Non si confonde con nulla, ed è ciò che serve a un marchio che deve essere riconosciuto da una parola sola. |
-| **Enfasi** | `Instrument Serif` — **solo corsivo** | Ref B (il mix roman + corsivo) | Una parola sola per titolo. È la firma tipografica del sito: dà calore editoriale a un oggetto tecnico. File unico, ~14 KB. |
-| **Corpo · UI · Tecnico** | `Inter` (variabile) | Ref C (colonne di specifiche) | Leggibilità a corpo piccolo su fondo scuro, `tabular-nums` per i prezzi. |
+| Ruolo | Famiglia | Perché |
+|---|---|---|
+| **Display** | `Syne` 400–800 | Proporzioni volutamente anomale: la `O` è quasi un cerchio perfetto, la `A` ha il vertice tagliato, gli spessori cambiano dove non te lo aspetti. Non si confonde con nulla, ed è ciò che serve a un marchio riconoscibile da una parola sola. |
+| **Corpo · UI** | `Inter` | Leggibilità a corpo piccolo, metriche ampie. |
+| **Misure** | `JetBrains Mono` | **Nuova in v3, e necessaria.** Profondità, quote, spessori, numero di strati e tempi sono *misure*, e le misure si incolonnano. Senza un monospaziato tabellare le colonne ballano. |
 
-**Decisione presa consapevolmente:** niente monospace. Il look "specifica tecnica" della reference C si ottiene con Inter in **maiuscolo, 12px, tracking `0.14em`, `--text-secondary`**, disposto in colonne. Una quarta famiglia costerebbe ~20 KB in più sul percorso critico per una differenza che a quel corpo quasi non si vede. Se dopo averlo visto non ti convince, si aggiunge `JetBrains Mono` in mezz'ora.
+`Instrument Serif` è stata **rimossa**: il corsivo editoriale era la firma della
+direzione precedente e in stratigrafia era un prestito.
 
-### 5.1 Scala (base 16px, fluida con `clamp()`)
+### L'enfasi è cavata a strati
 
-| Token | Desktop | Mobile | Uso |
-|---|---|---|---|
-| `display-xl` | 120px | 52px | Titolo hero. Archivo `wdth 110`, `600`, tracking `-0.03em`, `line-height 0.92` |
-| `display-l` | 72px | 38px | Titoli sezione, nome prodotto |
-| `index` | 96px | 44px | Numerale d'indice prodotto (`01`, `02`) — ref C. Archivo `700`, `--text-secondary` al 35% |
-| `title-m` | 30px | 24px | Sottotitoli, nome prodotto nel carosello 3D |
-| `body-l` | 20px | 18px | Paragrafo introduttivo |
-| `body` | 16px | 16px | Corpo. **Mai sotto 16px su mobile**: evita lo zoom automatico iOS sugli input |
-| `spec` | 12px | 12px | Specifiche. Maiuscolo, tracking `0.14em`, tabellare |
+Le parole che portano il significato non sono in corsivo di un'altra famiglia:
+sono **cavate a strati**, con righe orizzontali da uno strato ritagliate nel
+pieno delle lettere (`background-clip: text`). Il marchio e il titolo dicono la
+stessa cosa nello stesso modo. Una sola enfasi per titolo.
 
-### 5.1-bis Il logotipo
+### Il logotipo
 
-Il carattere da solo non è ancora un marchio. La firma di STRATO sono le
-**linee di stampa dentro le lettere**: non disegnate sopra la parola ma
-**ritagliate nella parola** con `background-clip: text`, quindi esistono solo
-dove c'è inchiostro. È l'oggetto stampato ridotto a cinque lettere.
+Syne ExtraBold con le **linee di stampa dentro le lettere** — non disegnate
+sopra la parola, ritagliate nella parola: esistono solo dove c'è inchiostro. Al
+passaggio del mouse una linea ambra lo attraversa dal basso verso l'alto, come
+la testina che depone uno strato. Una volta, non in loop: è un gesto.
 
-Al passaggio del mouse una linea ambra attraversa il marchio dal basso verso
-l'alto — la testina che depone uno strato. Una volta, non in loop: è un gesto,
-non un'animazione.
-
-Dove `background-clip: text` non è supportato la parola resta bianca piena. Un
-logotipo invisibile sarebbe un difetto molto peggiore di un logotipo senza le
-sue righe.
-
-### 5.2 Regole
-
-- **Un solo `display-xl` per schermata.** Se due titoli enormi convivono, nessuno dei due è grande.
-- **Un solo corsivo per titolo**, sulla parola che porta il significato. Due corsivi = zero enfasi. Es. *"Oggetti che nascono **strato dopo strato**"* con "strato dopo strato" in Instrument Serif corsivo.
-- Titoli in **frasi minuscole**. Il maiuscolo è riservato alle specifiche tecniche: serve a separare la voce editoriale da quella tecnica.
-- Prezzi sempre `tabular-nums`: le cifre non devono ballare quando cambia la variante.
-- Misura di riga 60–70 caratteri. Su fondo scuro le righe lunghe affaticano più che su chiaro.
-- **Nessun testo importante dentro il canvas 3D.** Tutto ciò che va letto, indicizzato o selezionato vive nel DOM sopra il canvas (vincolo SEO + accessibilità, § 8).
+Dove `background-clip: text` non è supportato la parola resta piena. Un logotipo
+invisibile sarebbe un difetto molto peggiore di uno senza le sue righe.
 
 ---
 
-## 6. Principi di motion
+## 6. Motion — il deposito
 
-Cinque regole, in ordine di priorità: se due confliggono vince quella più in alto.
+**Niente entra in dissolvenza.** Una dissolvenza è la firma di un sito
+qualunque; qui tutto si **deposita**: una maschera scopre il contenuto dal basso
+verso l'alto e il bordo è **netto**, non sfumato — un bordo sfumato darebbe una
+dissolvenza mascherata, che è esattamente ciò che non vogliamo.
 
-### 1. Continuità — mai un taglio
-Nessun cambio di stato è istantaneo. Passare da home a catalogo a prodotto non "carica una pagina": **la camera si sposta**. L'oggetto cliccato non scompare per ricomparire, viaggia. Conseguenza tecnica vincolante: il `<Canvas>` è **persistente sopra il router**, non viene mai smontato al cambio rotta.
+Le cinque regole, in ordine di priorità:
 
-### 2. Il movimento obbedisce al dito
-Lo scroll è il cursore della timeline. Fermo il dito → si ferma. Torno indietro → torna indietro. Niente animazioni autoplay lunghe che vanno avanti per conto loro: tolgono il senso di controllo, e su un e-commerce questo si traduce in diffidenza.
-**Due eccezioni,** entrambe dalle reference: l'**oscillazione lenta di sospensione** degli oggetti (comunica *questo fluttua, è manipolabile*) e il **lento scorrere del cielo**. Sono respiro ambientale, non narrazione.
+1. **Continuità.** Un solo `<Canvas>` sopra il router, mai smontato: passare di
+   pagina è un movimento, non un rimontaggio.
+2. **Il movimento obbedisce al dito.** Vedi §2: qui non è un principio, è
+   l'architettura. Unica eccezione: la **prima stampa**, automatica
+   all'apertura (~2,1 s), che esiste per *insegnare la regola*. Si vede una
+   volta per sessione, qualsiasi gesto la conclude, e se a 1,2 s la scena non è
+   pronta si salta al pezzo finito.
+3. **Un pezzo in stampa non fluttua.** È vincolato al piatto, e comincia a
+   sollevarsi e a ruotare solo quando è finito. È la differenza fra un oggetto
+   in lavorazione e un oggetto finito, e si legge senza spiegazioni.
+4. **Un protagonista per volta.** La scena si passa il testimone con calma, il
+   **testo si alterna in fretta**: due schede in dissolvenza incrociata non si
+   leggono né l'una né l'altra.
+5. **Il motion è un livello, non una struttura.** Con `prefers-reduced-motion`
+   il sito perde il movimento e non perde nulla di funzionale.
 
-### 3. Inerzia controllata, non elastica
-- Lenis: `lerp ~0.09`, nessun rimbalzo a fine scroll
-- Easing: `expo.out` per gli ingressi (parte veloce, si posa piano — sensazione di massa) · `power2.inOut` per i movimenti di camera
-- Durate: micro-interazione 150–250ms · transizione elemento 400–600ms · viaggio di camera 800–1200ms
-- **Parallasse del mouse smorzato, non diretto:** massimo ±3° di rotazione e ±20px di traslazione, interpolati a `lerp 0.05`. Il 3D che insegue il cursore 1:1 sembra un giocattolo, non uno studio.
-- Su mobile la stessa curva è pilotata dal **giroscopio** (`deviceorientation`), con ampiezza dimezzata e richiesta di permesso su iOS 13+. Se il permesso è negato, la scena resta ferma: non è mai un requisito.
+### Inerzia
 
-### 4. Un protagonista per volta
-Quando un oggetto è a fuoco, gli altri sono **più lontani, meno luminosi, più lenti**. La gerarchia si costruisce con profondità, scala e luce — mai con il colore, che è riservato al prodotto. È la disciplina di 6TM ("un messaggio per blocco") tradotta in tre dimensioni.
+Lenis `lerp 0.09`, nessun rimbalzo. Parallasse del puntatore **smorzato**: ±3° e
+±20 px, `lerp 0.05`. Il 3D che insegue il cursore 1:1 sembra un giocattolo.
 
-### 5. Il motion è un livello, non una struttura
-Con `prefers-reduced-motion` o senza WebGL il sito **perde il movimento e non perde nulla di funzionale**: stessa gerarchia, stessi contenuti, acquisto completo. Il test è: *se spengo tutte le animazioni, il sito vende ancora?* Se no, è sbagliato il layout, non il motion.
+### Il ritmo
 
-### 6.1 Ritmo dello scroll in home
+~100svh di hero + ~120svh per pezzo. **Più lento della v2 di proposito:** qui lo
+scroll non scorre, deposita, e una stampa troppo rapida non si legge come una
+stampa.
 
-~4 schermate piene, un messaggio per schermata. La barra "prossimo prodotto" in basso (reference C) è il motore: mostra sempre **dove stai andando**, così lo scroll non è mai un salto nel buio.
+### La composizione cambia con il formato, non si adatta
 
-```
-0.00  Cielo al crepuscolo. Un oggetto sospeso al centro, in silenzio.
-      Titolo. Nessuna richiesta all'utente. Solo respiro.
-0.18  Primo scroll: la camera avanza, il titolo esce verso l'alto e si dissolve.
-      I pannelli di vetro entrano dal basso.
-0.30  Oggetto 01 a fuoco. Hotspot ancorato al modello → nome, prezzo, "aggiungi".
-      Colonna specifiche a destra, maiuscolo tecnico. Indice "01" grande, dietro.
-0.50  Oggetto 02. Il primo scivola indietro nel cielo, il secondo arriva dall'orizzonte.
-      Passaggio continuo: mai un fotogramma in cui non c'è nessun protagonista.
-0.70  Oggetto 03. Compare l'etichetta "disponibile subito".
-0.85  La camera arretra e rivela tutti gli oggetti sospesi sull'orizzonte
-      → CTA "vedi il catalogo".
-1.00  Uscita dal 3D. Blocco "Su richiesta": fondo pieno, tipografico, accento --hot.
-      Il contrasto con il 3D è il punto. Qui si parla, non si guarda.
-```
+In orizzontale la scheda occupa la destra e il pezzo sta a sinistra; la linea
+trasla in continuo, come una catena che passa. In verticale la scheda occupa la
+metà bassa, il pezzo resta centrato in alto, la camera arretra a 7,3 unità — e
+**la linea sosta**: il pezzo resta fermo per tutta la finestra in cui la sua
+scheda è leggibile, e il passaggio avviene nel varco fra due schede.
 
-**Distanza:** ~600vh. Meno diventa frenetico, più diventa una tassa per arrivare al footer.
-**Sempre presente:** un link **"salta al catalogo"**, primo elemento focusabile della pagina, visibile al focus da tastiera. Chi vuole solo comprare non deve subire la regia. Questo è insieme un requisito di accessibilità e una scelta di conversione.
-
----
-
-## 7. Tre idee di hero
-
-Tutte e tre: cielo al crepuscolo con orizzonte ambra, oggetti sospesi, pannelli di vetro fluttuanti, reazione smorzata a mouse/giroscopio. Cambia **cosa fa la camera** e **cosa racconta**.
-
-### Idea A — "Arcipelago"
-*Dalla reference A.* Gli oggetti stanno su **piedistalli sottili che fluttuano** nel cielo a quote e profondità diverse, sfalsati, come isole sospese. La camera **scivola lateralmente** tra loro: lo scroll verticale diventa movimento orizzontale. Ogni piedistallo che passa davanti all'orizzonte si accende di controluce ambra, poi rientra nella penombra.
-
-- **Forza:** leggibilità immediata di "sono prodotti, in fila, in vendita". La più diretta e la meno rischiosa per la conversione. Scala bene: se aggiungi 20 prodotti, funziona ancora.
-- **Rischio:** è la più convenzionale. Bella, ma non è quella di cui si parla.
-- **Costo:** basso. Un asse di camera, un solo materiale, instancing dei piedistalli.
-
-### Idea B — "Capsula"
-*Dalla reference C.* Ogni prodotto è dentro una **sfera di vetro rifrangente** che fluttua sull'orizzonte, con piccole bolle che orbitano lentamente. Lo scroll fa ruotare le capsule su un carosello in profondità; quella a fuoco si apre — il vetro si dissolve — e l'oggetto resta nudo, pronto per essere ispezionato.
-
-- **Forza:** l'immagine più preziosa delle tre. Il vetro comunica *oggetto da collezione*, che è esattamente il posizionamento di "oggetti da esposizione / design". L'apertura della capsula è una micro-storia di 600ms che fa da transizione naturale alla pagina prodotto.
-- **Rischio: il più serio del documento.** `MeshTransmissionMaterial` richiede un re-render della scena per ogni superficie rifrangente. Con 3+ capsule visibili su un mid-range Android si va sotto i 30 fps garantiti. Mitigazione obbligatoria: **una sola capsula rifrattiva** (quella a fuoco), le altre con un materiale finto (`MeshPhysicalMaterial` trasparente + cubemap statica). Su profilo basso, niente vetro.
-- **Costo:** alto. È l'idea che può far saltare il vincolo di performance se gestita male.
-
-### Idea C — "Strato dopo strato" *(la mia raccomandazione)*
-
-Si apre quasi al buio: solo un cielo notturno e una **linea di luce ambra** all'orizzonte.
-Poi la linea **comincia a salire**. E mentre sale, l'oggetto **si costruisce sotto di essa, strato dopo strato** — perché quella linea è due cose insieme: **il sole che sorge** e **la testina di stampa**. In ~1,8s l'oggetto è finito, la linea raggiunge l'orizzonte e si ferma lì, diventando il tramonto che illumina tutta la scena. Il titolo compare. Da quel momento lo scroll passa alla modalità *Arcipelago* (A): gli altri oggetti arrivano già finiti. **La nascita si vede una volta sola.**
-
-- **Forza:** è l'unica delle tre che **racconta chi sei**. Non vendi oggetti: vendi il fatto che li produci tu — che è anche il motivo per cui ha senso il blocco "Su richiesta". Fonde nome, processo produttivo e immagine in un gesto solo, e nessun concorrente può prendersela perché è costruita sul nome. Tecnicamente è anche la più elegante: un solo piano di taglio animato riusato da tutta la scena.
-- **Rischio:** un'animazione d'ingresso è in conflitto naturale con LCP < 2,5s. **Si mitiga così, ed è vincolante:**
-  1. L'LCP è il **titolo in DOM su gradiente CSS**, renderizzato lato server e visibile a 0ms. Non è il canvas. Il canvas arriva dopo e non entra nella misura.
-  2. L'animazione parte **solo a modello caricato**. Se a 1200ms il GLB non c'è, si salta direttamente alla scena finita: nessuna attesa, nessun schermo vuoto.
-  3. Si vede **una volta per sessione** (`sessionStorage`). Alla seconda visita è una tassa, non un effetto.
-  4. È **saltabile**: qualsiasi scroll, tap o tasto la conclude immediatamente.
-- **Costo:** medio. Il taglio a strati è uno shader semplice (`clippingPlanes` + una emissive band). La complessità vera è nella logica di degradazione, non nella grafica.
-
-### Confronto
-
-| | A — Arcipelago | B — Capsula | C — Strato dopo strato |
-|---|---|---|---|
-| Impatto nei primi 3s | Medio | **Alto** | **Alto** |
-| Racconta il brand | Basso | Medio | **Alto** |
-| Fedeltà alle reference | Alta (ref A) | **Altissima** (ref C) | Media, poi alta |
-| Rischio performance | **Basso** | **Alto** | Medio |
-| Tenuta su mobile | **Alta** | Media | Alta |
-| Rischio sulla conversione | **Basso** | Medio | Basso (con mitigazioni) |
-| Scala a 20+ prodotti | **Sì** | Con fatica | Sì (eredita A) |
-
-**Raccomandazione: C, che confluisce in A dopo i primi 2 secondi.** Ottieni il racconto e l'impatto, e resti su un impianto che regge su mobile e scala col catalogo. **B non la scarto: diventa il trattamento della pagina prodotto**, dove c'è un solo oggetto in scena, il budget di rendering è tutto suo e la preziosità del vetro lavora a favore dell'acquisto invece che contro la performance.
+Il motivo è geometrico: in verticale la mezza larghezza inquadrata vale 1,16
+unità contro 2,5 dell'orizzontale, quindi lo stesso spostamento porta il pezzo
+fuori campo in metà tempo. Con una traslazione lineare la scheda di un pezzo era
+ancora a schermo mentre il pezzo era già tagliato dal bordo. Sono **due
+inquadrature diverse**, come fra orizzontale e verticale in fotografia.
 
 ---
 
-## 8. Vincoli di design (i non negoziabili, tradotti in regole grafiche)
+## 7. Come si vede che è stampato
 
-- **Il testo vive nel DOM.** Nome, prezzo, descrizione, specifiche: renderizzati lato server, sopra il canvas. Il 3D è l'*immagine* del prodotto, non il suo contenuto. Vale per SEO, screen reader, `Ctrl+F` e fallback tutti insieme, con un solo lavoro.
-- **Ogni oggetto 3D interattivo ha un gemello nel DOM:** un `<button>` posizionato e focusabile con `aria-label`. `Tab` percorre i prodotti nell'ordine di scroll, e il focus **muove la camera** sull'oggetto corrispondente. Gli hotspot della reference C sono già elementi DOM: li implementiamo con `<Html>` di drei, quindi sono accessibili per costruzione.
-- **Focus ring sempre visibile:** 2px `--accent-warm` + 2px di offset. Su vetro traslucido un outline sottile sparisce.
-- **Area di tocco minima 44×44px**, hotspot 3D compresi.
-- **Mobile first sul touch:** un dito = orbita, due dita = zoom, il pinch non deve mai far zoomare la pagina (`touch-action: none` solo sul canvas). L'anteprima 3D all'hover in catalogo è un **arricchimento desktop**: su touch il tap apre direttamente il prodotto, non esiste uno stato intermedio.
-- **Il gradiente del cielo è CSS, non WebGL.** Il canvas è trasparente sopra di esso. Così lo sfondo è già a posto prima che React monti, il fallback è identico al sito vero, e la giuntura non esiste.
-- **Lingua italiana**, stringhe centralizzate e pronte per i18n: nessun testo cablato nei componenti.
+Tre dettagli, e senza di essi il concetto resta scritto e non visibile.
+
+**Le linee sull'oggetto.** Una mappa di rilievo con una riga per strato, e la
+luce radente che le accende. Il profilo di un singolo strato non è una riga: è un
+**cordone** — chiaro al centro dove il filamento è più spesso, scuro al bordo
+dove due passate si incontrano. Le creste sono anche più lucide delle valli,
+perché la punta del cordone è stata schiacciata dall'ugello. Disegnata su canvas,
+zero byte di rete.
+
+**L'ombra di contatto.** Su fondo chiaro è **l'elemento più importante della
+scena**: è ciò che appoggia il pezzo su un piano. Senza, un oggetto su fondo
+chiaro è un ritaglio incollato.
+
+**La mappa d'ambiente.** Costruita in scena con dei `Lightformer`, non scaricata:
+una HDRI pronta costa 2-4 MB e una connessione a un dominio terzo sul percorso
+critico. Una superficie satinata non ha alcun aspetto proprio — è fatta di quello
+che riflette — e senza mappa d'ambiente sembra gesso.
+
+---
+
+## 8. Vincoli di design (i non negoziabili, tradotti in regole)
+
+- **Il testo vive nel DOM**, mai dentro il canvas. Una scelta, quattro problemi
+  risolti: SEO, screen reader, `Ctrl+F` e fallback senza WebGL.
+- **Il contrasto lo decide lo strato**, non il componente (§4).
+- **Focus ring rettangolare**, 4px (uno strato) nel colore dell'ugello.
+- **Area di tocco minima 44×44 px.**
+- **Mobile first sul touch:** un dito ruota, due zoomano, il pinch non zooma
+  mai la pagina.
+- **Da 1024 px la gabbia è asimmetrica:** l'indicatore di profondità occupa la
+  fascia destra e il contenuto le lascia la corsia. Dichiarato una volta in
+  `.content-grid`, non compensato a mano in ogni sezione.
+- **Lingua italiana**, stringhe centralizzate e pronte per i18n.
 
 ---
 
 ## 9. Degradazione automatica della qualità
 
-Tre profili, scelti a runtime (`navigator.hardwareConcurrency`, `deviceMemory`, dimensione schermo, fps misurati nei primi 2s) e forzabili a mano da un controllo nel footer.
-
 | | **Alto** | **Medio** | **Basso / fallback** |
 |---|---|---|---|
 | Pixel ratio | fino a 2 | 1.5 | 1 |
 | Mappa d'ambiente | 256 px | 128 px | nessuna |
-| Piano di stampa | **riflettente** | opaco | nessuno |
-| Ombre | soft, mappa 2048 | contact shadow | nessuna |
-| Bloom | sì | no | no |
-| Raggi dall'orizzonte | sì | sì | no |
-| Polvere | 90 granelli | 40 | 0 |
-| Oggetti in scena | 8 | 4 | immagini statiche |
-| Blur dei pannelli UI | 28px | 16px | nessuno, fondo pieno |
-| Animazione "genesi" | sì | sì | no |
+| Ombra di contatto | 1024 px | 512 px | nessuna |
+| Ombre proiettate | sì | no | no |
+| Pezzi in scena | 8 | 4 | immagini statiche |
+| Prima stampa | sì | sì | no |
 | Antialiasing | MSAA | FXAA | — |
 
-Se gli fps restano sotto 30 per più di 2 secondi consecutivi si **scala di un profilo e non si risale** nella stessa sessione: l'oscillazione tra profili è più fastidiosa del profilo basso.
+Rispetto alla v2 sono sparite cinque voci (riflessi, bloom, raggi, polvere,
+nebbia): non sono state tagliate per performance, **non servono più**. Erano
+tutte al servizio di un'atmosfera notturna che non esiste più. Il risultato è
+una scena più leggera e più coerente insieme.
 
-**Fallback totale** (no WebGL · `prefers-reduced-motion` · perdita del contesto WebGL): stesso cielo in gradiente, stessi pannelli di vetro, stessa tipografia, stesso layout. Al posto del canvas, un'immagine `poster` in `.webp` estratta dallo stesso render. **Nessuna funzione d'acquisto persa.** Non è una pagina d'emergenza: è lo stesso sito, fermo.
+Se gli fps restano sotto 30 per più di 2 secondi consecutivi si **scala di un
+profilo e non si risale**: l'oscillazione è più fastidiosa del profilo basso.
+
+**Fallback totale** (no WebGL · `prefers-reduced-motion`): gli strati si
+impilano e si leggono uno dopo l'altro, già stampati. Stesso contenuto, stessa
+gerarchia, acquisto completo.
 
 ---
 
 ## 10. Tono di voce
 
-Dalle reference prendo la brevità e l'imperativo; da 6TM la disciplina. Niente entusiasmo da marketplace.
-
 - Frasi brevi. Verbi all'inizio. Nessun superlativo.
-- **Le specifiche sono dati, non promesse:** `PLA OPACO · 120×80×45 MM · 3-5 GIORNI LAVORATIVI`. Mai "qualità eccezionale".
-- Il corsivo tipografico (§5) porta l'unica nota calda del testo. Usarlo sulla parola che conta, mai sull'aggettivo.
-- Il "su richiesta" si dichiara subito come **preventivo, non acquisto**: *"Raccontaci l'oggetto. Ti rispondiamo con un preventivo entro 48 ore."* Nessun prezzo automatico, nessuna ambiguità — anche perché è ciò che ci tiene puliti rispetto al recesso (art. 59 Cod. Consumo).
-- Non si dichiara la qualità: si mostra il processo. È esattamente quello che fa l'hero C.
+- **Le specifiche sono dati, non promesse:** `110 × 110 × 140 MM · 0,16 MM ·
+  875 STRATI · 3-5 GIORNI LAVORATIVI`. Mai "qualità eccezionale".
+- L'elenco dei prodotti è una **distinta di produzione**, non una griglia di
+  card: una riga per pezzo, incolonnata — numero, nome, tempi, prezzo. È la
+  forma che prende un elenco quando le informazioni sono misure.
+- Il "su richiesta" si dichiara subito come **preventivo, non acquisto**.
+- Non si dichiara la qualità: si mostra il processo. È ciò che fa il sito intero.
 
 ---
 
 ## 11. Dati confermati e ancora da decidere
 
-**Confermati da te:** tono dark/tech → riletto come *Crepuscolo* (§2) · categorie: **oggetti da esposizione / design**, **regali personalizzati**, **decor** · spedizione: **solo Italia, costo fisso**.
+**Confermati:** brand **STRATO** · spedizione **8,99 €**, gratuita da **90,00 €**,
+solo Italia · **10 prodotti** · categorie *decor · illuminazione · scrittoio ·
+regali personalizzati* · ragione sociale e P.IVA come segnaposto.
 
-**Da decidere insieme:**
+**Da decidere:**
 
-1. **Il conflitto del § 2.** *Crepuscolo* va bene, o intendevi il nero assoluto da studio fotografico? Cambia tutto il resto.
-2. **Il nome: STRATO.** Ti convince? (alternative: MICRON, ZETA). Dominio e marchio da verificare — io non l'ho fatto.
-3. **Quale hero:** A, B o C. Io consiglio **C che confluisce in A**, con B spostata sulla pagina prodotto.
-4. **Spedizione:** costo esatto (es. 6,90 €) e soglia di gratuità (es. 60 €). Finché non me li dai restano segnaposto marcati in `/data/shipping.ts`.
-5. **Ragione sociale, P.IVA, sede, PEC/email** — per footer, pagine legali ed email transazionali.
-6. **Quanti prodotti reali** hai per il lancio? Sotto i 6, il catalogo va disegnato come selezione curata, non come griglia filtrabile.
-7. Le categorie che hai indicato sono 3: confermi che **"oggetti da esposizione / design"** è una categoria e non il posizionamento generale? Se è il posizionamento, ne servono altre due merceologiche.
-
----
-
-*Prossimo passo, a tua approvazione: `PLAN.md` — piano tecnico, fasi, struttura cartelle. Non scrivo una riga di codice prima del tuo via.*
+1. Costo e soglia di spedizione sono confermati, ma **ragione sociale, P.IVA,
+   sede e PEC** restano segnaposto: sono obbligatori per legge prima del lancio.
+2. **Dominio e marchio "STRATO"** non sono stati verificati.
+3. Email dove ricevere i preventivi e dominio per le email transazionali.
+4. Chiavi Stripe in modalità test.
+5. Preferenza storage per gli upload: Vercel Blob (default) o Cloudflare R2.

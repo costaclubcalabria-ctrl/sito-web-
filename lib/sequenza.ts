@@ -40,6 +40,29 @@ export function fuoco(i: number, t: number): number {
  * Quindi: gli oggetti si passano il testimone con calma, le parole si alternano
  * in fretta.
  */
+/**
+ * Quanto è **stampato** l'oggetto i-esimo, da 0 a 1.
+ *
+ * È il cuore del sito: lo scroll non muove un oggetto già finito, lo
+ * **deposita**. Scendendo di un millimetro si aggiunge uno strato; risalendo si
+ * torna indietro. Non è un'animazione che parte e finisce, è una funzione della
+ * posizione — quindi obbedisce al dito, sempre (DESIGN.md §6, regola 2).
+ *
+ * La finestra di stampa si apre prima del fuoco e si chiude quando l'oggetto è
+ * pienamente a fuoco: quando lo leggi, è finito.
+ */
+export function stampa(i: number, t: number): number {
+  const centro = centroFuoco(i)
+  const inizio = centro - 0.15
+  const fine = centro - 0.01
+  if (t <= inizio) return 0
+  if (t >= fine) return 1
+  const v = (t - inizio) / (fine - inizio)
+  // Lineare di proposito: una stampa deposita strati a velocità costante, e
+  // un'accelerazione qui si leggerebbe come un difetto della macchina.
+  return v
+}
+
 export function opacitaPannello(f: number): number {
   const v = (f - 0.42) / 0.36
   if (v <= 0) return 0

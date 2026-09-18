@@ -6,83 +6,50 @@ import type { QualitySettings } from '@/lib/quality'
 /**
  * La mappa d'ambiente — costruita in scena, non scaricata.
  *
- * È il singolo intervento che più cambia la resa dei materiali. Una plastica
- * satinata o una superficie metallica non hanno alcun aspetto proprio: sono
- * fatte di quello che riflettono. Senza una mappa d'ambiente non riflettono
- * niente, e qualunque oggetto — per quanto ben illuminato — sembra gesso.
+ * È l'intervento che più cambia la resa dei materiali. Una superficie satinata
+ * non ha alcun aspetto proprio: è fatta di quello che riflette. Senza mappa
+ * d'ambiente non riflette niente, e qualunque oggetto sembra gesso.
  *
- * Le HDRI pronte di drei (`preset="sunset"`) si scaricano da un CDN: 2-4 MB e
+ * Le HDRI pronte di drei (`preset="studio"`) si scaricano da un CDN: 2-4 MB e
  * una connessione a un dominio terzo sul percorso critico. Qui l'ambiente è
- * **disegnato con dei `Lightformer`**: pannelli luminosi disposti attorno alla
- * scena, renderizzati una volta sola in una cubemap da 256 px. Costo di rete:
- * zero. E soprattutto sono *i nostri* colori — l'ambra dell'orizzonte, il
- * viola del cielo — non quelli di un tramonto fotografato altrove.
+ * **disegnato con dei `Lightformer`** e renderizzato una volta sola in una
+ * cubemap piccola. Costo di rete: zero.
  *
- * La disposizione è quella di un set fotografico vero:
- * - una striscia calda bassa, davanti: è l'orizzonte che illumina il prodotto
- * - due pannelli freddi alti ai lati: il cielo
- * - una striscia stretta dietro: il controluce che stacca la sagoma dal fondo
+ * La disposizione è quella di una cabina di posa: un soffitto luminoso ampio,
+ * due pareti chiare ai lati, e il piano chiaro sotto che rimanda luce.
  */
 export function Ambiente({ settings }: { settings: QualitySettings }) {
   if (settings.ambiente === 0) return null
 
   return (
-    <Environment resolution={settings.ambiente} frames={1}>
-      {/* L'orizzonte: larga, bassa, calda. È la sorgente principale. */}
+    <Environment resolution={settings.ambiente} frames={1} background={false}>
+      {/* Soffitto luminoso: la sorgente principale di ciò che si riflette. */}
       <Lightformer
         form="rect"
-        intensity={2.6}
-        color="#ffb066"
-        scale={[30, 3, 1]}
-        position={[0, -1.4, -9]}
-        rotation={[0, 0, 0]}
-      />
-      {/* Il nucleo, più stretto e più caldo: dà il punto di luce sui bordi. */}
-      <Lightformer
-        form="rect"
-        intensity={4.2}
-        color="#ffe3b0"
-        scale={[10, 0.8, 1]}
-        position={[0, -1.1, -7]}
+        intensity={2.2}
+        color="#ffffff"
+        scale={[14, 9, 1]}
+        position={[0, 7, 1]}
+        rotation={[Math.PI / 2, 0, 0]}
       />
 
-      {/* Il cielo: due pannelli freddi e larghi, in alto ai lati. */}
-      <Lightformer
-        form="rect"
-        intensity={0.5}
-        color="#8ea8ff"
-        scale={[7, 5, 1]}
-        position={[-9, 6, 1]}
-        rotation={[0, Math.PI / 2.4, 0]}
-      />
-      <Lightformer
-        form="rect"
-        intensity={0.4}
-        color="#a98fff"
-        scale={[7, 5, 1]}
-        position={[9, 6, 1]}
-        rotation={[0, -Math.PI / 2.4, 0]}
-      />
+      {/* Pareti chiare: danno ai bordi verticali qualcosa da riflettere. */}
+      <Lightformer form="rect" intensity={1.1} color="#fff4e4" scale={[7, 6, 1]} position={[-7, 2.6, 2]} rotation={[0, Math.PI / 2.2, 0]} />
+      <Lightformer form="rect" intensity={0.85} color="#eaf0ff" scale={[7, 6, 1]} position={[7, 2.6, 2]} rotation={[0, -Math.PI / 2.2, 0]} />
 
-      {/* Controluce: stretto, dietro, freddo. È ciò che stacca la sagoma. */}
+      {/* Rimbalzo dal piano: è il piano chiaro visto dagli oggetti. */}
       <Lightformer
         form="rect"
-        intensity={1.7}
-        color="#cbb6ff"
-        scale={[14, 1.6, 1]}
-        position={[0, 2.4, -12]}
-      />
-
-      {/* Riflesso dal basso: simula la luce che rimbalza sul piano specchiante,
-          anche quando il piano non c'è (profilo medio). */}
-      <Lightformer
-        form="rect"
-        intensity={0.5}
-        color="#6a4a7a"
-        scale={[18, 6, 1]}
-        position={[0, -5, 0]}
+        intensity={0.7}
+        color="#f2ece0"
+        scale={[16, 10, 1]}
+        position={[0, -2.4, 1]}
         rotation={[-Math.PI / 2, 0, 0]}
       />
+
+      {/* Una striscia calda bassa e frontale: il riflesso che corre lungo gli
+          spigoli degli strati. È il dettaglio che fa sembrare il pezzo reale. */}
+      <Lightformer form="rect" intensity={1.6} color="#ffc98a" scale={[9, 0.5, 1]} position={[-1.4, 0.3, 4.2]} />
     </Environment>
   )
 }

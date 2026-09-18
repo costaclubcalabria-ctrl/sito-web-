@@ -4,9 +4,14 @@ import { MenuMobile } from './MenuMobile'
 import { t } from '@/i18n'
 
 /**
- * Barra di navigazione fluttuante: non tocca mai i bordi del viewport
- * (DESIGN.md §1.3, reference C). Server Component: è solo link, non serve
- * JavaScript per funzionare.
+ * L'intestazione.
+ *
+ * Una barra piena larghezza con una **cucitura** sotto, non un'isola
+ * fluttuante: in una pagina fatta di strati sovrapposti, un elemento che
+ * galleggia contraddice il sistema. Questo è il primo strato, e sta attaccato
+ * al bordo.
+ *
+ * Server Component: è solo link, non serve JavaScript per funzionare.
  */
 const VOCI = [
   { href: '/catalogo', label: t.nav.catalogo },
@@ -16,22 +21,33 @@ const VOCI = [
 
 export function Header() {
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-0 z-30 pt-3 sm:pt-5">
+    <header
+      className="sticky top-0 z-30 backdrop-blur-[2px]"
+      style={{ background: 'color-mix(in srgb, var(--bg-corrente) 88%, transparent)' }}
+    >
       <div className="content-grid">
         <nav
           aria-label={t.nav.home}
-          className="glass pointer-events-auto relative flex items-center gap-2 rounded-full py-2 pr-2 pl-5 sm:gap-6 sm:pl-6"
+          className="flex items-center gap-3 border-b py-3 sm:gap-8"
+          style={{ borderColor: 'var(--linea-corrente)' }}
         >
-          <Link href="/" className="shrink-0 py-2" aria-label={`${t.brand.nome} — ${t.nav.home}`}>
+          <Link href="/" className="shrink-0 py-1" aria-label={`${t.brand.nome} — ${t.nav.home}`}>
             <Logo />
           </Link>
 
-          <ul className="ml-auto hidden items-center gap-6 sm:flex">
+          {/* La profondità corrente, sempre visibile. Su desktop la colonna
+              laterale la mostra per esteso; qui è il numero e basta. */}
+          <span className="quota ml-auto hidden tabular-nums sm:inline lg:hidden" data-numeric>
+            <span data-profondita-testo>000</span> mm
+          </span>
+
+          <ul className="ml-auto hidden items-center gap-7 sm:flex lg:ml-8">
             {VOCI.map((v) => (
               <li key={v.href}>
                 <Link
                   href={v.href}
-                  className="text-sm text-ink-soft transition-colors duration-200 hover:text-ink"
+                  className="text-sm transition-colors duration-200"
+                  style={{ color: 'var(--ink-corrente-soft)' }}
                 >
                   {v.label}
                 </Link>
@@ -40,16 +56,15 @@ export function Header() {
           </ul>
 
           {/* Il carrello arriva in Fase 3. Finché non esiste, la CTA porta dove
-              qualcosa succede davvero: nessun pulsante finto in barra. */}
+              qualcosa succede davvero: nessun pulsante finto in barra.
+              Colore dell'ugello perché è l'azione che produce un oggetto. */}
           <Link
             href="/su-richiesta"
-            className="ml-auto inline-flex min-h-11 items-center rounded-full bg-ink px-4 text-sm font-medium text-sky-top transition-colors duration-200 hover:bg-white sm:ml-0 sm:px-5"
+            className="ml-auto inline-flex min-h-11 items-center rounded-[var(--radius-strato)] bg-ugello px-4 text-sm font-medium text-paper transition-transform duration-200 hover:translate-x-px hover:translate-y-px sm:ml-0 sm:px-5"
           >
             {t.nav.suRichiesta}
           </Link>
 
-          {/* Su schermi stretti le voci di nav sono nascoste: senza questo menu
-              il sito sarebbe navigabile solo dal footer. */}
           <MenuMobile voci={VOCI} />
         </nav>
       </div>

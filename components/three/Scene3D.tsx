@@ -7,7 +7,6 @@ import { declassa, settingsFor, type QualitySettings, type QualityTier } from '@
 import { SceneDirector } from './SceneDirector'
 import { StudioLights } from './lights/StudioLights'
 import { Ambiente } from './lights/Ambiente'
-import { PostFX } from './effects/PostFX'
 import { PointerRig } from './rigs/PointerRig'
 import { PerfWatch } from './rigs/PerfWatch'
 
@@ -57,7 +56,10 @@ export function Scene3D({
         // Il tone mapping filmico è ciò che rende credibile la luce del tramonto:
         // senza, l'ambra dell'orizzonte va in clipping e diventa una macchia.
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 1.05,
+        // Su fondo chiaro l'esposizione va tenuta bassa: il contrasto lo deve
+        // dare l'ombra, non la luce. Alzarla sbianca gli strati, che sono
+        // esattamente cio che si deve vedere.
+        toneMappingExposure: 0.92,
       }}
       camera={{ position: [0, 0.9, 5.2], fov: 38, near: 0.1, far: 120 }}
       // Il canvas non intercetta i click: li gestiscono le ancore DOM, che sono
@@ -68,20 +70,11 @@ export function Scene3D({
         gl.localClippingEnabled = true
       }}
     >
-      {/* La nebbia lega gli oggetti lontani al colore dell'orizzonte.
-          Il colore NON e libero: e quello che il cielo CSS ha all'altezza dello
-          schermo dove le cose spariscono. Se i due non coincidono compare una
-          banda piatta dove finisce la scena e comincia il fondo — il difetto
-          piu evidente della prima versione. */}
-      <fog attach="fog" args={['#160e26', 12, 38]} />
-
       <Suspense fallback={null}>
         <Ambiente settings={settings} />
         <StudioLights settings={settings} />
         <SceneDirector settings={settings} />
       </Suspense>
-
-      <PostFX settings={settings} />
 
       <PointerRig />
       <PerfWatch onCalo={declassaUnaVolta} />

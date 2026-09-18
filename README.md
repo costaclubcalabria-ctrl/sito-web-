@@ -3,6 +3,12 @@
 E-commerce 3D per oggetti stampati in 3D.
 *Strato dopo strato.*
 
+> **Il principio, in una riga: lo scroll è la testina.**
+> Ogni prodotto si stampa mentre lo raggiungi, strato dopo strato; se torni
+> indietro si s-stampa. Non è un'animazione che parte e finisce, è una funzione
+> della posizione di scroll. La pagina è una carota geologica e la posizione è
+> una profondità in millimetri. Vedi `DESIGN.md` §2.
+
 - **`DESIGN.md`** — direzione creativa: palette, tipografia, principi di motion, idee di hero
 - **`PLAN.md`** — piano tecnico, fasi, struttura cartelle, decisioni architetturali
 - **`MODELS.md`** — pipeline da STL/3MF a GLB ottimizzato
@@ -99,7 +105,19 @@ a fuoco, quale materiale è selezionato, il contenuto del carrello.
 **Se ti viene voglia di mettere il progresso dello scroll in uno `useState`,
 non farlo**: sono 60 re-render al secondo dell'intero albero.
 
-### 3. Il testo vive nel DOM, mai dentro il canvas
+### 3. Lo strato decide, il componente ubbidisce
+
+`components/layout/Stratigrafia.tsx` traduce la posizione nel documento in
+**materiale corrente** e **profondità in millimetri**, e li scrive come variabili
+su `:root`. Da lì li legge tutto il resto: fondo, colore del testo, colore delle
+linee, indicatore.
+
+Nessun componente decide da sé se è su uno strato chiaro o profondo: lo sa perché
+lo strato glielo dice (`data/strati.ts`). **Se ti serve sapere il colore del
+testo, usa `var(--ink-corrente)`** — non scrivere un colore fisso, o su uno degli
+strati sarà illeggibile.
+
+### 4. Il testo vive nel DOM, mai dentro il canvas
 
 Nome, prezzo, descrizione e specifiche sono renderizzati lato server sopra il
 canvas. Il 3D è l'*immagine* del prodotto, non il suo contenuto.
@@ -116,8 +134,11 @@ fallback senza WebGL.
 - **`prefers-reduced-motion`**: il chunk 3D **non viene nemmeno scaricato**, i
   pannelli si impilano e si leggono uno dopo l'altro
 - **Senza WebGL**: stessa cosa
-- **Da tastiera**: `Tab` percorre skip link → navigazione → CTA → i prodotti in
-  ordine di scroll, e il focus su un prodotto **porta la camera su quell'oggetto**
+- **Da tastiera**: `Tab` percorre skip link → navigazione → CTA → la distinta di
+  produzione, che porta a **tutti e dieci** i prodotti. Le schede della sequenza
+  entrano nell'ordine di tabulazione solo quando sono visibili — una scheda
+  invisibile non deve essere raggiungibile — e quando lo sono, il focus su una di
+  esse porta il pezzo al punto di posa
 - **Area di tocco** minima 44 × 44 px, focus ring sempre visibile
 
 ## Budget di performance
@@ -126,8 +147,8 @@ fallback senza WebGL.
 |---|---|---|---|
 | LCP | < 2,5 s su 4G | — | L'elemento LCP è l'`<h1>` su gradiente CSS, renderizzato lato server: si vede prima che un solo byte di JavaScript venga eseguito. Il canvas arriva dopo e non entra nella misura. |
 | JS sul percorso critico | il minimo possibile | **179 KB gzip** | Di cui **152 KB sono React 19 + Next 16**, cioè il pavimento del framework. Il codice dell'applicazione sono i restanti ~27 KB. |
-| JS differito | — | **290 KB gzip** | three + R3F + drei + GSAP + Lenis. Caricato dopo l'evento `load`, in un momento di quiete. **Con `prefers-reduced-motion` o senza WebGL non viene scaricato affatto.** |
-| CSS | — | **7,3 KB gzip** | Tutto il foglio di stile del sito |
+| JS differito | — | **290 KB gzip** | three + R3F + drei + GSAP + Lenis. Caricato dopo l'evento `load`, in un momento di quiete. **Con `prefers-reduced-motion` o senza WebGL non viene scaricato affatto.** In v3 la scena è più leggera: riflessi, bloom, raggi, polvere e nebbia sono stati eliminati perché non servono più. |
+| CSS | — | vedi `npm run build` | Tutto il foglio di stile del sito |
 | fps | 60 desktop · ≥ 30 mobile | — | Tre profili, declassamento automatico a una via |
 | GLB | < 1,5 MB | — | `npm run models:ottimizza` esce con errore se il budget salta |
 
@@ -162,6 +183,7 @@ versione per volta e si ricontrolla la scena.
 | @react-three/fiber | 9.7.0 |
 | @react-three/drei | 10.7.8 |
 | Tailwind | 4.3.3 |
+| postprocessing | rimosso in v3 |
 
 *Ultimo allineamento: settembre 2026.*
 

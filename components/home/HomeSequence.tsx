@@ -6,30 +6,34 @@ import { frame, clamp01, range } from '@/lib/frame'
 import { useScene } from '@/store/useScene'
 import { scrollA } from '@/lib/lenis'
 import { preferisceMenoMovimento } from '@/lib/quality'
-import { centroFuoco, fuoco, opacitaPannello } from '@/lib/sequenza'
+import { centroFuoco, fuoco, opacitaPannello, stampa } from '@/lib/sequenza'
 
 /**
- * Il motore dello scroll della home.
+ * Il motore della home.
  *
- * Hero e sequenza prodotti stanno dentro **un solo viewport fisso** e dentro
- * **un solo ScrollTrigger**. È una scelta precisa: due trigger separati
- * significherebbero due progressi da sincronizzare, e basta un frame di
- * sfasamento perché il titolo esca prima che la camera sia partita. Con un
- * progresso solo, il taglio non può esistere (DESIGN.md §6.1).
+ * ============================================================================
+ * LO SCROLL È LA TESTINA
+ * ============================================================================
  *
- * Fa tre cose, nessuna delle quali passa da uno stato React per frame:
+ * Questa è l'idea che tiene insieme tutto il sito. Lo scroll non muove una
+ * camera davanti a oggetti già finiti: **deposita**. Ogni prodotto si stampa
+ * mentre lo raggiungi, strato dopo strato, e se torni indietro si s-stampa.
  *
- * 1. Scrive `frame.scroll` (0→1). È l'unico canale tra lo scroll del DOM e la
- *    camera 3D: la scena legge quel numero e nient'altro (PLAN.md §3.2).
- * 2. Muove opacità e traslazione dei pannelli scrivendo **direttamente sugli
- *    elementi**, con la stessa funzione `fuoco()` che usa la scena. Due curve
- *    diverse farebbero arrivare pannello e oggetto in momenti leggermente
- *    diversi: è il tipo di sfasamento che si nota senza saper dire perché.
- * 3. Aggiorna il prodotto a fuoco nello store **solo al cambio di indice**:
- *    è informazione semantica, cambia 4 volte in tutta la corsa.
+ * Non è un'animazione che parte e finisce: è una **funzione della posizione**.
+ * Quindi obbedisce al dito, sempre — fermi il dito e la stampa si ferma a metà
+ * pezzo. È la regola 2 del motion portata alle sue conseguenze.
  *
- * Il focus da tastiera porta lo scroll sull'oggetto corrispondente: è così che
- * `Tab` "muove la camera" (DESIGN.md §8) senza una riga di logica 3D.
+ * E la stessa funzione guida tre cose insieme:
+ * 1. l'oggetto 3D, tramite `frame.stampa` (un piano di taglio che sale);
+ * 2. il testo della scheda, tramite `--deposito` (una maschera a gradini);
+ * 3. la linea della testina, che è dove il deposito sta arrivando adesso.
+ *
+ * Testo e oggetto crescono insieme perché leggono **lo stesso numero**. Due
+ * curve diverse li farebbero arrivare in momenti leggermente sfasati, ed è il
+ * tipo di difetto che si nota senza saper dire perché.
+ *
+ * Niente di tutto questo passa da uno stato React: sarebbero 60 re-render al
+ * secondo dell'intero albero (PLAN.md §3.2).
  */
 
 /** Il titolo esce di scena entro questo progresso. */
@@ -59,10 +63,10 @@ export function HomeSequence({
     const root = contenitore.current
     if (!root) return
 
-    // Con `prefers-reduced-motion` la sequenza non esiste: i pannelli si
-    // impilano e si leggono uno dopo l'altro. Il sito perde il movimento e non
-    // perde nulla di funzionale (DESIGN.md §6, regola 5).
-    // Nota: qui usciamo **prima** di importare GSAP, quindi chi ha chiesto meno
+    // Con `prefers-reduced-motion` la sequenza non esiste: le schede si
+    // impilano e si leggono una dopo l'altra, già stampate. Il sito perde il
+    // movimento e non perde nulla di funzionale.
+    // Nota: usciamo **prima** di importare GSAP, quindi chi ha chiesto meno
     // movimento non scarica nemmeno la libreria delle animazioni.
     if (preferisceMenoMovimento()) {
       root.classList.add('sequenza-statica')
@@ -76,12 +80,12 @@ export function HomeSequence({
     const applica = (p: number) => {
       frame.scroll = p
 
-      // L'hero si smaterializza salendo. Non sparisce e basta: se ne va.
+      // L'hero non si dissolve: si ritira verso l'alto e si spegne.
       if (heroEl) {
         const uscita = range(p, 0, FINE_HERO)
         const visibile = uscita < 0.995
         heroEl.style.opacity = String(1 - uscita)
-        heroEl.style.transform = `translate3d(0, ${-uscita * 70}px, 0)`
+        heroEl.style.transform = `translate3d(0, ${-uscita * 64}px, 0)`
         heroEl.style.visibility = visibile ? 'visible' : 'hidden'
         heroEl.style.pointerEvents = uscita < 0.35 ? 'auto' : 'none'
         heroEl.setAttribute('aria-hidden', visibile ? 'false' : 'true')
@@ -89,28 +93,38 @@ export function HomeSequence({
 
       let attivo = -1
       let massimo = 0
+      let stampaAttiva = 0
 
       for (let i = 0; i < pannelli.length; i++) {
         const el = pannelli[i]
         if (!el) continue
 
         const f = fuoco(i, p)
+        const s = stampa(i, p)
+
         if (f > massimo) {
           massimo = f
           attivo = i
+          stampaAttiva = s
         }
 
         // Il testo si alterna in fretta anche se la scena si passa il testimone
-        // con calma: due schede in dissolvenza non si leggono (vedi percorso.ts).
+        // con calma: due schede in dissolvenza non si leggono.
         const o = opacitaPannello(f)
         const visibile = o > 0.01
+
         el.style.opacity = visibile ? String(o) : '0'
         el.style.visibility = visibile ? 'visible' : 'hidden'
-        el.style.transform = `translate3d(0, ${(1 - o) * 22}px, 0)`
+        el.style.transform = `translate3d(0, ${(1 - o) * 18}px, 0)`
         el.setAttribute('aria-hidden', visibile ? 'false' : 'true')
-        // Un pannello che non si vede non deve essere raggiungibile da Tab.
         el.style.pointerEvents = o > 0.6 ? 'auto' : 'none'
+
+        // Il deposito del testo: la stessa funzione che stampa l'oggetto.
+        el.style.setProperty('--deposito', s.toFixed(3))
       }
+
+      // L'unico canale fra lo scroll e la testina della scena 3D.
+      frame.stampa = stampaAttiva
 
       if (attivo !== ultimoIndice) {
         ultimoIndice = attivo
@@ -134,7 +148,7 @@ export function HomeSequence({
       const y = st.start + (st.end - st.start) * clamp01(centroFuoco(i))
 
       // Se siamo già lì non muovere nulla: uno scroll che riparte a ogni Tab
-      // dentro lo stesso pannello è disorientante.
+      // dentro la stessa scheda è disorientante.
       if (Math.abs(window.scrollY - y) < window.innerHeight * 0.35) return
       scrollA(y)
     }
@@ -157,8 +171,6 @@ export function HomeSequence({
         onUpdate: (self) => applica(self.progress),
       })
 
-      // Stato iniziale coerente anche prima del primo evento di scroll (per
-      // esempio tornando indietro su una posizione già scrollata).
       applica(st.progress)
     })()
 
@@ -169,6 +181,7 @@ export function HomeSequence({
       root.removeEventListener('focusin', onFocusIn)
       st?.kill()
       frame.scroll = 0
+      frame.stampa = 0
     }
   }, [slugs, setFocus])
 
@@ -176,17 +189,16 @@ export function HomeSequence({
     <div
       ref={contenitore}
       className="relative"
-      // 100svh per l'hero + ~110svh per prodotto. Con 4 prodotti fa 540svh:
-      // nell'ordine di grandezza prescritto da DESIGN.md §6.1 (~600vh).
-      style={{ height: `${100 + slugs.length * 110}svh` }}
+      // 100svh per l'hero + ~120svh per pezzo. Più lento della versione
+      // precedente di proposito: qui lo scroll non scorre, deposita, e una
+      // stampa troppo rapida non si legge come una stampa.
+      style={{ height: `${100 + slugs.length * 120}svh` }}
     >
       <div className="sequenza-viewport sticky top-0 h-svh overflow-hidden">
-        {/* Ogni livello e a tutto schermo e si porta i propri margini: cosi il
-            testo non esce mai dalla gabbia, in nessun formato. */}
         <div className="sequenza-inner relative h-full">
           <div
             ref={heroRef}
-            className="sequenza-hero velo-testo content-grid absolute inset-0 isolate flex items-end pb-[max(5rem,18svh)] will-change-[opacity,transform] sm:items-center sm:pb-0"
+            className="sequenza-hero content-grid absolute inset-0 flex items-end pb-[max(4rem,14svh)] will-change-[opacity,transform] sm:items-center sm:pb-0"
           >
             {hero}
           </div>

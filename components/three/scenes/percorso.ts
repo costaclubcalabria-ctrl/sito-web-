@@ -2,156 +2,129 @@ import * as THREE from 'three'
 
 // Rie-esportate per comodità di chi lavora sulla scena: l'implementazione sta
 // in lib/sequenza.ts, che non importa three (vedi la nota in quel file).
-export { centroFuoco, fuoco, opacitaPannello } from '@/lib/sequenza'
+export { centroFuoco, fuoco, opacitaPannello, stampa } from '@/lib/sequenza'
 
 /**
- * Il percorso della camera nella home.
+ * La coreografia della home, v3.
  *
- * Le posizioni degli oggetti e le chiavi della camera stanno nello stesso file
- * di proposito: sono una coreografia sola. Cambiare una senza l'altra produce
- * inquadrature vuote, ed è l'errore più facile da fare in una scena guidata
- * dallo scroll.
+ * ============================================================================
+ * LA CAMERA NON VIAGGIA. È LA LINEA CHE SCORRE.
+ * ============================================================================
  *
- * Il ritmo segue DESIGN.md §6.1: un protagonista per volta, passaggi continui,
- * mai un fotogramma in cui non c'è nessuno a fuoco.
+ * Nelle versioni precedenti la camera attraversava un paesaggio in profondità.
+ * Era generico — è ciò che fa qualunque sito 3D — e soprattutto contraddiceva
+ * il concetto: se la camera vola, gli oggetti sono un panorama; se la camera
+ * sta ferma, gli oggetti sono **pezzi che passano davanti a te**.
+ *
+ * Qui la camera è fissa e frontale, come quella puntata su un piatto di stampa.
+ * I pezzi sono allineati su una linea orizzontale e la linea trasla: uno alla
+ * volta arriva al punto di posa, si stampa, e lascia il posto al successivo.
+ *
+ * Il movimento residuo della camera è solo la parallasse del puntatore,
+ * smorzata e minima. Non c'è altro.
  */
 
-/** Distanza tra un oggetto e il successivo lungo Z. */
-const PASSO_Z = 7
-
-/**
- * Distanza della camera dall'oggetto a fuoco.
- *
- * Non è un numero scelto a occhio: con `fov 38°` l'altezza inquadrata a
- * distanza d vale `2·d·tan(19°) ≈ 0.69·d`. Gli oggetti sono alti ~1,4 unità,
- * quindi a 4,4 unità occupano circa il 46% dell'altezza dello schermo — sono
- * il protagonista senza schiacciare il pannello di testo accanto.
- */
-const DISTANZA_FUOCO = 4.4
+/** Distanza fra un pezzo e il successivo lungo la linea. */
+const PASSO_X = 4.2
 
 /**
- * Spostamento laterale della composizione.
- *
- * Il punto di mira **è** il centro dello schermo. Per mettere l'oggetto a
- * sinistra basta guardare un punto alla sua destra. In verticale (mobile) il
- * pannello sta in basso, quindi l'offset laterale si azzera e l'oggetto sale.
+ * Dove sta il pezzo a fuoco nell'inquadratura, in unità di scena.
+ * Negativo = a sinistra, perché la scheda occupa la destra. In verticale è 0:
+ * lì la scheda sta in basso e il pezzo resta centrato.
  */
-const OFFSET_ORIZZONTALE = 1.25
+const POSA_X = -1.15
+
+/** Il punto di posa nell'hero: a destra, perché la sinistra è del titolo. */
+const POSA_HERO = -0.55
 
 export interface Composizione {
-  /** Rapporto larghezza/altezza del viewport. */
   aspetto: number
 }
 
-/** Posizione in scena dell'oggetto i-esimo. Sfalsata, mai allineata: dà volume. */
+/**
+ * Posizione del pezzo i-esimo sulla linea.
+ * Le quote Y e Z variano di poco: una fila perfettamente allineata si legge
+ * come una vetrina, una appena sfalsata come una linea di produzione.
+ */
 export function posizioneOggetto(i: number): THREE.Vector3 {
-  const lato = i % 2 === 0 ? -1 : 1
-  const scarto = i === 0 ? 0 : lato * (0.55 + (i % 3) * 0.22)
-  return new THREE.Vector3(scarto, 0.34 + (i % 2) * 0.12, -i * PASSO_Z)
-}
-
-interface Chiave {
-  /** Progresso di scroll a cui questa chiave è esattamente centrata. */
-  t: number
-  /** Indice dell'oggetto su cui la camera è centrata. -1 = nessuno. */
-  oggetto: number
-  /** Distanza dall'oggetto lungo Z. */
-  dist: number
-  /** Altezza della camera. */
-  y: number
-  /** Altezza del punto di mira. */
-  mira: number
-  /**
-   * Da che parte sta l'oggetto nell'inquadratura:
-   * -1 = a destra (il titolo occupa la sinistra) · +1 = a sinistra (il pannello
-   * occupa la destra) · 0 = centrato.
-   */
-  lato: -1 | 0 | 1
-  /**
-   * Di quanto sollevare l'oggetto **in verticale** (mobile), abbassando la mira.
-   * Nell'hero serve molto di più: sotto ci sono titolo, testo e due CTA, e un
-   * oggetto dietro al titolo lo rende illeggibile.
-   */
-  su: number
-}
-
-/** Le tappe di DESIGN.md §6.1. */
-const CHIAVI: Chiave[] = [
-  { t: 0.0, oggetto: 0, dist: 6.2, y: 1.05, mira: 0.78, lato: -1, su: 1.95 },
-  { t: 0.18, oggetto: 0, dist: 5.6, y: 1.0, mira: 0.76, lato: -1, su: 1.7 },
-  { t: 0.3, oggetto: 0, dist: DISTANZA_FUOCO, y: 0.98, mira: 0.74, lato: 1, su: 0.85 },
-  { t: 0.5, oggetto: 1, dist: DISTANZA_FUOCO, y: 0.98, mira: 0.74, lato: 1, su: 0.85 },
-  { t: 0.7, oggetto: 2, dist: DISTANZA_FUOCO, y: 0.98, mira: 0.74, lato: 1, su: 0.85 },
-  { t: 0.88, oggetto: 3, dist: DISTANZA_FUOCO, y: 1.0, mira: 0.74, lato: 1, su: 0.85 },
-  // Arretramento: la camera sale e rivela tutto il campo di oggetti sospesi.
-  { t: 1.0, oggetto: 2, dist: 11.5, y: 3.6, mira: 0.3, lato: 0, su: 0.4 },
-]
-
-const _pos = new THREE.Vector3()
-const _look = new THREE.Vector3()
-const _posB = new THREE.Vector3()
-const _lookB = new THREE.Vector3()
-
-/** Riempie pos/look per una singola chiave. */
-function valutaChiave(k: Chiave, offsetX: number, pos: THREE.Vector3, look: THREE.Vector3): void {
-  const o = posizioneOggetto(k.oggetto)
-  const dx = k.lato * offsetX
-
-  look.set(o.x + dx, k.mira, o.z)
-  pos.set(o.x + dx, k.y, o.z + k.dist)
+  const lato = i % 2 === 0 ? 1 : -1
+  return new THREE.Vector3(i * PASSO_X, 0, lato * 0.34)
 }
 
 /**
- * Interpola posizione e punto di mira a un dato progresso.
+ * Posizione della linea (il gruppo che contiene tutti i pezzi) al progresso `t`.
  *
- * Scrive nei vettori passati invece di allocarne di nuovi: gira 60 volte al
- * secondo, e un `new Vector3()` per frame è spazzatura che il garbage
- * collector fa poi pagare con uno scatto visibile.
+ * `indice` è la posizione continua lungo la linea: 0 = primo pezzo al punto di
+ * posa, 1 = secondo, e così via. Prima del primo fuoco resta bloccato a
+ * `POSA_HERO`, così nell'hero il pezzo sta a destra del titolo e non ci finisce
+ * dietro.
  */
-export function campionaPercorso(
-  t: number,
-  posOut: THREE.Vector3,
-  lookOut: THREE.Vector3,
-  comp: Composizione,
-): void {
-  const p = Math.min(1, Math.max(0, t))
-
-  // In verticale il pannello sta in basso, non di lato: l'oggetto resta
-  // centrato e sale. È il ragionamento mobile-first di DESIGN.md §8 applicato
-  // alla composizione, non solo al layout.
+export function posizioneLinea(t: number, comp: Composizione, out: THREE.Vector3): void {
   const verticale = comp.aspetto < 1
-  const offsetX = verticale ? 0 : OFFSET_ORIZZONTALE * Math.min(1, (comp.aspetto - 0.8) / 0.6)
-  // In verticale il pannello occupa la meta bassa: l'oggetto sale e arretra,
-  // cosi resta intero e sopra il testo invece che dietro.
-  // 1.7× la distanza porta l'oggetto a circa un quarto dell'altezza dello
-  // schermo; l'alzata (per chiave, vedi `su`) lo colloca sopra il testo invece
-  // che dietro.
-  const allontana = verticale ? 1.7 : 1
+  const posa = verticale ? 0 : POSA_X * Math.min(1, (comp.aspetto - 0.75) / 0.6)
 
-  let i = 0
-  while (i < CHIAVI.length - 2 && p > (CHIAVI[i + 1]?.t ?? 1)) i++
+  // Nell'hero il pezzo resta poco a destra del titolo in orizzontale; in
+  // verticale il titolo sta sotto, quindi il pezzo e' gia centrato.
+  const inizio = verticale ? -0.001 : POSA_HERO
+  const grezzo = Math.max(inizio, (t - 0.3) / 0.2)
 
-  const a = CHIAVI[i]
-  const b = CHIAVI[i + 1]
-  if (!a || !b) return
+  /*
+   * In verticale la linea non trasla in continuo: **sosta**.
+   *
+   * Il motivo e' geometrico. La mezza larghezza inquadrata in verticale vale
+   * circa 1,16 unita contro le 2,5 dell'orizzontale: lo stesso spostamento
+   * laterale porta il pezzo fuori campo in meta tempo. Con una traslazione
+   * lineare la scheda di un pezzo era ancora a schermo mentre il pezzo era
+   * gia mezzo tagliato dal bordo — testo e oggetto raccontavano due cose
+   * diverse, che e' il difetto peggiore di una scena guidata dallo scroll.
+   *
+   * Quindi il pezzo resta fermo al centro per tutta la finestra in cui la sua
+   * scheda e' leggibile, e il passaggio al successivo avviene in fretta, nel
+   * varco fra le due schede.
+   */
+  const indice = verticale ? conSosta(grezzo) : grezzo
 
-  valutaChiave(a, offsetX, _pos, _look)
-  valutaChiave(b, offsetX, _posB, _lookB)
-
-  const span = b.t - a.t
-  const locale = span <= 0 ? 0 : (p - a.t) / span
-  // smoothstep: la camera non cambia direzione di scatto sulle chiavi.
-  const e = locale * locale * (3 - 2 * locale)
-
-  posOut.copy(_pos.lerp(_posB, e))
-  lookOut.copy(_look.lerp(_lookB, e))
-
-  if (allontana !== 1) posOut.z = lookOut.z + (posOut.z - lookOut.z) * allontana
-
-  const alzata = verticale ? a.su + (b.su - a.su) * e : 0
-
-  // In verticale l'oggetto va nella metà alta dello schermo per lasciare posto
-  // al pannello: si ottiene abbassando il punto di mira.
-  lookOut.y -= alzata
-  posOut.y -= alzata * 0.3
+  out.set(-indice * PASSO_X + posa, 0, 0)
 }
+
+/** Semiampiezza della sosta, in frazioni di passo. */
+const SOSTA = 0.3
+
+function conSosta(grezzo: number): number {
+  const i = Math.round(grezzo)
+  const d = grezzo - i
+  const a = Math.abs(d)
+  if (a <= SOSTA) return i
+  const verso = d < 0 ? -1 : 1
+  return i + verso * ((a - SOSTA) / (0.5 - SOSTA)) * 0.5
+}
+
+/** La camera. Fissa: cambia solo con il formato dello schermo. */
+export function camera(comp: Composizione, posOut: THREE.Vector3, miraOut: THREE.Vector3): void {
+  const verticale = comp.aspetto < 1
+
+  if (verticale) {
+    /*
+     * In verticale il campo orizzontale si stringe moltissimo: con `fov 38°` e
+     * un rapporto 0,46 la mezza larghezza inquadrata vale solo `0.16 · d`. Con
+     * la distanza del formato orizzontale il pezzo sborderebbe dallo schermo.
+     *
+     * Quindi la camera arretra a 7,3 (il pezzo occupa circa un quarto
+     * dell'altezza) e il punto di mira scende sotto il piano: e' cosi che
+     * l'oggetto sale nel terzo superiore, sopra la scheda che occupa la meta
+     * bassa. Non e' un adattamento: e' un'inquadratura diversa, come si fa in
+     * fotografia fra orizzontale e verticale.
+     */
+    posOut.set(0, 1.4, 7.3)
+    miraOut.set(0, -0.6, 0)
+    return
+  }
+
+  // Frontale, appena sopra la quota del pezzo: è l'inquadratura di una foto di
+  // prodotto, non di un paesaggio.
+  posOut.set(0, 0.74, 4.25)
+  miraOut.set(0, 0.5, 0)
+}
+
+/** Altezza del piano d'appoggio: la quota 0 della stampa. */
+export const QUOTA_PIATTO = 0
