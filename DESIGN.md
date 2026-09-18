@@ -1,6 +1,6 @@
 # DESIGN.md — Direzione creativa
 
-**Stato: BOZZA v1 — in attesa della tua approvazione.**
+**Stato: APPROVATO (v1).** Direzione confermata: *Crepuscolo* · brand **STRATO** · hero **C**.
 Basata su: 3 reference allegate in chat + analisi di `shop.6tm-magazine.com` + i dati che mi hai confermato.
 
 ---
