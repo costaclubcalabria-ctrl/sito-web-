@@ -7,12 +7,17 @@
    ========================================================================= */
 
 @theme {
-  /* --- Cielo: sfondo della pagina E sfondo della scena 3D ----------------- */
-  --color-sky-top: #0d0a1a;
-  --color-sky-mid: #241a38;
-  --color-sky-low: #4a2e42;
-  --color-sky-horizon: #c97b4e;
-  --color-sky-glow: #f5c26b;
+  /* --- Cielo -------------------------------------------------------------- */
+  /* Non piu un gradiente lineare da una tinta all'altra: un'atmosfera a strati.
+     Dallo spazio profondo in cima all'incandescenza sotto l'orizzonte. */
+  --color-sky-void: #05040f;      /* spazio profondo, sopra tutto */
+  --color-sky-top: #0a0919;       /* notte */
+  --color-sky-mid: #17102c;       /* viola profondo */
+  --color-sky-low: #2c1638;       /* il viola si scalda */
+  --color-sky-ember: #5e2437;     /* brace */
+  --color-sky-horizon: #b8552f;   /* la linea dell'orizzonte */
+  --color-sky-glow: #ffc46b;      /* il nucleo della luce */
+  --color-sky-core: #ffe6b8;      /* il punto piu caldo, appena sotto il bordo */
 
   /* --- Testo -------------------------------------------------------------- */
   --color-ink: #f6f3fa;
@@ -35,7 +40,12 @@
   --color-glass-line: rgb(255 255 255 / 0.14);
 
   /* --- Tipografia --------------------------------------------------------- */
-  --font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
+  /* Syne (Bonjour Monde, open source). Grotesque dalle proporzioni anomale:
+     la O e quasi un cerchio, la A ha il vertice tagliato, le aste cambiano
+     spessore in modo non convenzionale. Non si confonde con nient'altro —
+     ed e esattamente cio che serve a un marchio che deve essere riconosciuto
+     da una parola sola. DESIGN.md §5. */
+  --font-display: var(--font-syne), 'Syne', system-ui, sans-serif;
   --font-sans: var(--font-inter), 'Inter', system-ui, sans-serif;
   --font-emphasis: var(--font-instrument), 'Instrument Serif', Georgia, serif;
 
@@ -82,17 +92,64 @@
   :root {
     color-scheme: dark;
 
-    /* L'orizzonte sta in basso, tra il 90% e il 100% (DESIGN.md §4.1).
-       Questo gradiente e il fondo del DOM ed e anche cio che si vede dietro il
-       canvas trasparente: devono coincidere, altrimenti si vede la giuntura. */
-    --sky: linear-gradient(
-      to bottom,
-      var(--color-sky-top) 0%,
-      var(--color-sky-mid) 52%,
-      var(--color-sky-low) 86%,
-      var(--color-sky-horizon) 97%,
-      var(--color-sky-glow) 100%
-    );
+    /* L'atmosfera.
+
+       Sette strati invece di un gradiente lineare. Un gradiente lineare, per
+       quanto ben scelto, legge come un filtro messo sopra la pagina: qui c'e
+       una sorgente di luce precisa — il sole appena sotto l'orizzonte, al
+       centro — e tutto il resto e la sua conseguenza.
+
+       ⚠️ LA LINEA DELL'ORIZZONTE STA A META' SCHERMO, NON IN FONDO.
+       Non e una scelta estetica ma un vincolo: in 3D il piano di stampa taglia
+       lo schermo all'altezza dell'occhio della camera, cioe intorno al 50%.
+       Se il cielo CSS mettesse la sua luce in basso, il piano 3D la coprirebbe
+       e resterebbe invisibile — che e esattamente cio che succedeva prima.
+       Sopra la linea c'e cielo, sotto c'e terreno. I due devono coincidere.
+
+       E' il fondo del DOM ed e anche cio che si vede dietro il canvas
+       trasparente. Cambiare questa quota significa rifare le chiavi della
+       camera in components/three/scenes/percorso.ts. */
+    --orizzonte: 49%;
+
+    --sky:
+      /* 1. il nucleo: strettissimo, sulla linea */
+      radial-gradient(42% 4.5% at 50% var(--orizzonte), var(--color-sky-core) 0%, transparent 78%),
+      /* 2. il bagliore del sole */
+      radial-gradient(66% 11% at 50% var(--orizzonte), var(--color-sky-glow) 0%, transparent 76%),
+      /* 3. l'alone caldo, che sale sopra la linea e non scende sotto */
+      radial-gradient(115% 26% at 50% calc(var(--orizzonte) + 1%), var(--color-sky-horizon) 0%, transparent 74%),
+      /* 4. la brace diffusa: e cio che impedisce lo stacco netto */
+      radial-gradient(160% 40% at 50% calc(var(--orizzonte) + 3%), var(--color-sky-ember) 0%, transparent 72%),
+      /* 5. nebulose fredde agli angoli alti: un cielo piatto non esiste */
+      radial-gradient(62% 40% at 6% 6%, #2a1b4d 0%, transparent 62%),
+      radial-gradient(54% 34% at 94% 0%, #12203f 0%, transparent 58%),
+      /* 6. il terreno: sotto la linea la luce cade in fretta */
+      linear-gradient(
+        180deg,
+        transparent calc(var(--orizzonte) - 1%),
+        #1a1026 calc(var(--orizzonte) + 6%),
+        #0e0a1a calc(var(--orizzonte) + 26%),
+        #07050f 100%
+      ),
+      /* 7. la base notturna, sopra la linea */
+      linear-gradient(
+        180deg,
+        var(--color-sky-void) 0%,
+        var(--color-sky-top) 30%,
+        var(--color-sky-mid) 62%,
+        var(--color-sky-low) 88%,
+        var(--color-sky-ember) 100%
+      );
+  }
+
+  /* In verticale la camera arretra e guarda piu in basso (percorso.ts, campo
+     `su`), quindi la linea del piano 3D sale sullo schermo. Il cielo CSS deve
+     seguirla, altrimenti la luce dell'orizzonte finisce dietro il terreno e
+     sparisce — che e' esattamente cio che succedeva su mobile. */
+  @media (max-aspect-ratio: 1 / 1) {
+    :root {
+      --orizzonte: 32%;
+    }
   }
 
   * {
@@ -172,6 +229,36 @@
     z-index: 0;
     background: var(--sky);
     pointer-events: none;
+  }
+
+  /* Le stelle. Un SVG in linea: nessuna richiesta di rete, visibili a 0 ms,
+     presenti anche nel fallback senza WebGL. Si diradano verso il basso perche
+     la luce dell'orizzonte le cancella — e' quello che fa un cielo vero.
+     La parallasse la aggiunge il 3D con la polvere in primo piano: due livelli
+     con due ruoli, non lo stesso effetto due volte. */
+  .sky-stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201000%20700%22%20preserveAspectRatio%3D%22xMidYMin%20slice%22%3E%3Cg%20fill%3D%22%23fff%22%3E%3Ccircle%20cx%3D%2244.2%22%20cy%3D%22100.3%22%20r%3D%221.24%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%22301.6%22%20cy%3D%2218.5%22%20r%3D%220.74%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%22587.1%22%20cy%3D%2245.3%22%20r%3D%221.03%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22243.4%22%20cy%3D%22164.8%22%20r%3D%221.27%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%22761.5%22%20cy%3D%22266.1%22%20r%3D%220.87%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22980.5%22%20cy%3D%2232.8%22%20r%3D%220.54%22%20opacity%3D%220.5%22%2F%3E%3Ccircle%20cx%3D%22270.3%22%20cy%3D%22153.1%22%20r%3D%220.83%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22915.0%22%20cy%3D%2249.8%22%20r%3D%220.84%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22416.7%22%20cy%3D%2229.6%22%20r%3D%220.84%22%20opacity%3D%220.7%22%2F%3E%3Ccircle%20cx%3D%22937.8%22%20cy%3D%22535.2%22%20r%3D%220.76%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22600.6%22%20cy%3D%22468.9%22%20r%3D%221.31%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22862.9%22%20cy%3D%2225.9%22%20r%3D%220.74%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22689.4%22%20cy%3D%22204.6%22%20r%3D%220.78%22%20opacity%3D%220.3%22%2F%3E%3Ccircle%20cx%3D%22735.4%22%20cy%3D%2241.0%22%20r%3D%221.18%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22264.4%22%20cy%3D%2221.0%22%20r%3D%220.59%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%2215.4%22%20cy%3D%22232.4%22%20r%3D%221.0%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22741.6%22%20cy%3D%22345.4%22%20r%3D%220.57%22%20opacity%3D%220.69%22%2F%3E%3Ccircle%20cx%3D%22636.5%22%20cy%3D%22131.3%22%20r%3D%220.67%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%22368.2%22%20cy%3D%22461.4%22%20r%3D%221.03%22%20opacity%3D%220.5%22%2F%3E%3Ccircle%20cx%3D%22939.4%22%20cy%3D%22107.1%22%20r%3D%221.32%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%2293.0%22%20cy%3D%22378.0%22%20r%3D%220.7%22%20opacity%3D%220.2%22%2F%3E%3Ccircle%20cx%3D%22480.4%22%20cy%3D%22278.6%22%20r%3D%220.87%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%22313.2%22%20cy%3D%22225.6%22%20r%3D%221.08%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%22715.3%22%20cy%3D%22174.8%22%20r%3D%220.52%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%22495.3%22%20cy%3D%22613.1%22%20r%3D%220.83%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22557.6%22%20cy%3D%2228.7%22%20r%3D%220.62%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22670.9%22%20cy%3D%22159.6%22%20r%3D%220.68%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22812.4%22%20cy%3D%2236.3%22%20r%3D%221.09%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22808.0%22%20cy%3D%22183.3%22%20r%3D%221.04%22%20opacity%3D%220.51%22%2F%3E%3Ccircle%20cx%3D%22484.8%22%20cy%3D%22530.1%22%20r%3D%221.3%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%2257.2%22%20cy%3D%22253.4%22%20r%3D%220.74%22%20opacity%3D%220.6%22%2F%3E%3Ccircle%20cx%3D%22963.6%22%20cy%3D%22218.1%22%20r%3D%221.08%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22872.8%22%20cy%3D%22128.8%22%20r%3D%221.24%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%2279.8%22%20cy%3D%22269.0%22%20r%3D%221.28%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%228.4%22%20cy%3D%2274.2%22%20r%3D%220.89%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%2240.3%22%20cy%3D%22302.3%22%20r%3D%221.16%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22388.9%22%20cy%3D%2286.2%22%20r%3D%220.63%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22236.6%22%20cy%3D%22115.6%22%20r%3D%221.27%22%20opacity%3D%220.5%22%2F%3E%3Ccircle%20cx%3D%22855.5%22%20cy%3D%22210.1%22%20r%3D%220.64%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22927.9%22%20cy%3D%2226.1%22%20r%3D%220.68%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22787.8%22%20cy%3D%22323.9%22%20r%3D%220.64%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22800.4%22%20cy%3D%22592.3%22%20r%3D%221.28%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22599.4%22%20cy%3D%2276.5%22%20r%3D%220.61%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22400.3%22%20cy%3D%22234.0%22%20r%3D%220.59%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22108.8%22%20cy%3D%2217.8%22%20r%3D%220.92%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22442.6%22%20cy%3D%2237.7%22%20r%3D%220.93%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22785.9%22%20cy%3D%22612.0%22%20r%3D%221.07%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%22994.9%22%20cy%3D%22254.6%22%20r%3D%221.17%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22873.1%22%20cy%3D%22526.5%22%20r%3D%220.53%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22535.7%22%20cy%3D%2288.5%22%20r%3D%220.6%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%22381.0%22%20cy%3D%22386.2%22%20r%3D%220.62%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%22888.1%22%20cy%3D%22259.2%22%20r%3D%220.66%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22959.7%22%20cy%3D%2230.8%22%20r%3D%220.86%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%2228.4%22%20cy%3D%22120.5%22%20r%3D%220.93%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22645.1%22%20cy%3D%22536.7%22%20r%3D%220.71%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22769.7%22%20cy%3D%22547.8%22%20r%3D%220.68%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22479.9%22%20cy%3D%22179.3%22%20r%3D%220.77%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22320.5%22%20cy%3D%22269.9%22%20r%3D%220.57%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%229.2%22%20cy%3D%2273.4%22%20r%3D%220.9%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22718.3%22%20cy%3D%2265.9%22%20r%3D%220.59%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%22652.3%22%20cy%3D%222.4%22%20r%3D%221.22%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22138.1%22%20cy%3D%22413.9%22%20r%3D%220.75%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%22948.5%22%20cy%3D%22271.4%22%20r%3D%220.86%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%2276.2%22%20cy%3D%229.5%22%20r%3D%221.24%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22678.2%22%20cy%3D%2233.7%22%20r%3D%221.3%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22408.5%22%20cy%3D%22266.8%22%20r%3D%221.33%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22858.7%22%20cy%3D%22506.0%22%20r%3D%220.68%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%22324.3%22%20cy%3D%22574.3%22%20r%3D%220.98%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22616.0%22%20cy%3D%22319.6%22%20r%3D%221.13%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22135.0%22%20cy%3D%229.4%22%20r%3D%221.18%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%22930.2%22%20cy%3D%22371.0%22%20r%3D%221.2%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22957.3%22%20cy%3D%22512.5%22%20r%3D%221.14%22%20opacity%3D%220.56%22%2F%3E%3Ccircle%20cx%3D%22256.9%22%20cy%3D%2214.8%22%20r%3D%221.29%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22272.1%22%20cy%3D%22553.7%22%20r%3D%220.98%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2223.2%22%20cy%3D%22469.4%22%20r%3D%220.94%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22358.3%22%20cy%3D%22455.4%22%20r%3D%221.21%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22999.1%22%20cy%3D%2295.8%22%20r%3D%220.64%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22600.7%22%20cy%3D%22478.6%22%20r%3D%221.01%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22543.1%22%20cy%3D%2263.2%22%20r%3D%220.64%22%20opacity%3D%220.69%22%2F%3E%3Ccircle%20cx%3D%22674.3%22%20cy%3D%22554.4%22%20r%3D%220.88%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22723.5%22%20cy%3D%22366.1%22%20r%3D%220.85%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22602.5%22%20cy%3D%221.2%22%20r%3D%220.65%22%20opacity%3D%220.22%22%2F%3E%3Ccircle%20cx%3D%22314.9%22%20cy%3D%22464.1%22%20r%3D%221.07%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22691.0%22%20cy%3D%22587.7%22%20r%3D%221.17%22%20opacity%3D%220.62%22%2F%3E%3Ccircle%20cx%3D%22668.4%22%20cy%3D%22305.4%22%20r%3D%220.76%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%22335.8%22%20cy%3D%22155.9%22%20r%3D%221.21%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22458.7%22%20cy%3D%22216.2%22%20r%3D%220.74%22%20opacity%3D%220.51%22%2F%3E%3Ccircle%20cx%3D%22707.5%22%20cy%3D%22330.5%22%20r%3D%220.58%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%22304.4%22%20cy%3D%22440.6%22%20r%3D%221.0%22%20opacity%3D%220.56%22%2F%3E%3Ccircle%20cx%3D%22309.6%22%20cy%3D%2250.1%22%20r%3D%221.16%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22264.6%22%20cy%3D%22494.3%22%20r%3D%220.52%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22412.0%22%20cy%3D%2251.5%22%20r%3D%221.27%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22209.7%22%20cy%3D%22261.0%22%20r%3D%220.85%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%22359.5%22%20cy%3D%2210.6%22%20r%3D%220.7%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%2267.6%22%20cy%3D%2248.1%22%20r%3D%220.55%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22756.0%22%20cy%3D%22175.7%22%20r%3D%220.91%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22944.7%22%20cy%3D%22193.9%22%20r%3D%221.15%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22522.1%22%20cy%3D%22318.0%22%20r%3D%221.25%22%20opacity%3D%220.62%22%2F%3E%3Ccircle%20cx%3D%22122.3%22%20cy%3D%2271.5%22%20r%3D%220.54%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22829.7%22%20cy%3D%22124.7%22%20r%3D%220.69%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%22927.4%22%20cy%3D%22174.1%22%20r%3D%221.21%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22910.0%22%20cy%3D%22509.9%22%20r%3D%220.63%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22478.7%22%20cy%3D%22105.7%22%20r%3D%220.94%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%22737.3%22%20cy%3D%22161.4%22%20r%3D%221.32%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22308.1%22%20cy%3D%2273.0%22%20r%3D%220.81%22%20opacity%3D%220.51%22%2F%3E%3Ccircle%20cx%3D%22587.3%22%20cy%3D%22100.0%22%20r%3D%221.05%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22856.5%22%20cy%3D%22409.8%22%20r%3D%220.74%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22471.3%22%20cy%3D%22633.9%22%20r%3D%220.85%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22844.7%22%20cy%3D%22561.0%22%20r%3D%220.53%22%20opacity%3D%220.22%22%2F%3E%3Ccircle%20cx%3D%22444.0%22%20cy%3D%22354.9%22%20r%3D%220.93%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22520.1%22%20cy%3D%2272.3%22%20r%3D%221.14%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%22788.0%22%20cy%3D%22276.4%22%20r%3D%220.92%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22777.3%22%20cy%3D%22616.1%22%20r%3D%221.23%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%2271.5%22%20cy%3D%228.5%22%20r%3D%221.17%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%22154.2%22%20cy%3D%22121.5%22%20r%3D%220.81%22%20opacity%3D%220.6%22%2F%3E%3Ccircle%20cx%3D%2282.4%22%20cy%3D%22188.3%22%20r%3D%221.11%22%20opacity%3D%220.5%22%2F%3E%3Ccircle%20cx%3D%22703.5%22%20cy%3D%22605.5%22%20r%3D%220.96%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22637.1%22%20cy%3D%22104.4%22%20r%3D%221.2%22%20opacity%3D%220.7%22%2F%3E%3Ccircle%20cx%3D%22738.3%22%20cy%3D%22364.5%22%20r%3D%221.3%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22263.3%22%20cy%3D%22446.1%22%20r%3D%221.01%22%20opacity%3D%220.23%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    background-size: cover;
+    background-position: top center;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 24%, transparent 46%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 24%, transparent 46%);
+    opacity: 0.8;
+  }
+
+  /* Vignettatura: chiude la composizione e spinge l'occhio verso il centro,
+     dove sta l'oggetto. Senza, la scena "scappa" ai bordi dello schermo. */
+  .sky-vignette {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      radial-gradient(130% 95% at 50% 50%, transparent 46%, rgb(3 2 10 / 0.5) 100%),
+      linear-gradient(180deg, rgb(3 2 10 / 0.4) 0%, transparent 18%);
   }
 
   /* Grana sottilissima. Un gradiente puro su schermo scuro mostra banding:
@@ -314,4 +401,132 @@
   visibility: visible !important;
   transform: none !important;
   pointer-events: auto !important;
+}
+
+/* ============================================================================
+   Il logotipo.
+   Le linee di stampa sono ritagliate DENTRO le lettere, non disegnate sopra:
+   esistono solo dove c'è inchiostro. Vedi components/layout/Logo.tsx.
+   ========================================================================= */
+.logo {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.0625rem;
+  line-height: 1;
+  letter-spacing: 0.17em;
+  /* Il tracking aggiunge spazio anche dopo l'ultima lettera: lo riprendo,
+     altrimenti il marchio sembra disallineato rispetto a tutto il resto. */
+  margin-right: -0.17em;
+  color: var(--color-ink);
+}
+
+.logo-word {
+  display: inline-block;
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .logo-word {
+    background-image:
+      /* 1. la testina: fuori campo finché non si passa sopra */
+      linear-gradient(
+        180deg,
+        transparent 44%,
+        var(--color-accent) 49%,
+        var(--color-sky-core) 50%,
+        var(--color-accent) 51%,
+        transparent 56%
+      ),
+      /* 2. gli strati */
+      repeating-linear-gradient(180deg, transparent 0 3px, rgb(5 4 15 / 0.62) 3px 4px),
+      /* 3. il pieno */
+      linear-gradient(180deg, var(--color-ink) 0%, var(--color-ink) 100%);
+    background-size:
+      100% 320%,
+      100% 100%,
+      100% 100%;
+    background-position:
+      0 -160%,
+      0 0,
+      0 0;
+    background-repeat: no-repeat, repeat, no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* La testina risale. Una volta, all'ingresso: non è un loop, è un gesto. */
+  a:hover .logo-word,
+  a:focus-visible .logo-word {
+    animation: strato-testina 1.1s var(--ease-out-expo);
+  }
+}
+
+@keyframes strato-testina {
+  from {
+    background-position:
+      0 220%,
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0 -160%,
+      0 0,
+      0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a:hover .logo-word,
+  a:focus-visible .logo-word {
+    animation: none;
+  }
+}
+
+/* ============================================================================
+   Velo di leggibilità.
+
+   La regola di DESIGN.md §4.2 — "la leggibilità vince sull'effetto" — vale
+   anche per il testo che sta direttamente sopra la scena 3D, non solo per i
+   pannelli di vetro. Con un cielo all'alba e un pavimento che riflette, il
+   fondo dietro il titolo cambia da un momento all'altro e il contrasto non è
+   più garantito da nessuno.
+
+   Questo è un velo scuro che parte dal bordo sinistro e si dissolve prima della
+   metà: protegge la colonna di testo senza toccare la scena, e non si vede.
+   Su schermi stretti diventa verticale, perché lì il testo sta in basso.
+   ========================================================================= */
+.velo-testo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent calc(var(--orizzonte) + 2%),
+    rgb(5 4 15 / 0.5) calc(var(--orizzonte) + 14%),
+    rgb(5 4 15 / 0.78) calc(var(--orizzonte) + 34%),
+    rgb(5 4 15 / 0.86) 100%
+  );
+}
+
+@media (min-width: 640px) {
+  .velo-testo::before {
+    background: linear-gradient(
+      100deg,
+      rgb(5 4 15 / 0.82) 0%,
+      rgb(5 4 15 / 0.64) 26%,
+      rgb(5 4 15 / 0.3) 46%,
+      transparent 62%
+    );
+  }
+}
+
+/* Nel layout statico il velo non serve: non c'è scena sotto. */
+.sequenza-statica .velo-testo::before {
+  display: none;
 }

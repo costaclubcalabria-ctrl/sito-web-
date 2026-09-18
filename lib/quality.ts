@@ -15,18 +15,48 @@ export interface QualitySettings {
   ombre: 'soft' | 'contact' | 'none'
   /** Superfici realmente rifrangenti ammesse in scena. 0 = vetro finto. */
   vetroRifrangente: number
-  postFx: 'full' | 'vignette' | 'none'
   /** Oggetti 3D simultanei in scena. */
   maxOggetti: number
   antialias: boolean
   /** L'animazione di genesi dell'hero (DESIGN.md §7, idea C). */
   genesi: boolean
+
+  // --- Atmosfera ------------------------------------------------------------
+  /**
+   * Risoluzione della mappa d'ambiente procedurale, 0 = spenta.
+   * È il singolo parametro che più cambia la resa dei materiali: senza, una
+   * plastica satinata non ha niente da riflettere e sembra gesso.
+   */
+  ambiente: number
+  /**
+   * Il piano specchiante sotto gli oggetti. Costa un secondo render della
+   * scena: solo sul profilo alto.
+   */
+  riflessi: boolean
+  /** Bloom in post-produzione. */
+  bloom: boolean
+  /** Raggi di luce che salgono dall'orizzonte. */
+  raggi: boolean
+  /** Granelli di polvere in sospensione. 0 = spenti. */
+  polvere: number
 }
 
 const PROFILI: Record<QualityTier, QualitySettings> = {
-  high: { tier: 'high', dpr: [1, 2], ombre: 'soft', vetroRifrangente: 1, postFx: 'full', maxOggetti: 8, antialias: true, genesi: true },
-  medium: { tier: 'medium', dpr: [1, 1.5], ombre: 'contact', vetroRifrangente: 0, postFx: 'vignette', maxOggetti: 4, antialias: true, genesi: true },
-  low: { tier: 'low', dpr: [1, 1], ombre: 'none', vetroRifrangente: 0, postFx: 'none', maxOggetti: 0, antialias: false, genesi: false },
+  high: {
+    tier: 'high', dpr: [1, 2], ombre: 'soft', vetroRifrangente: 1, maxOggetti: 8,
+    antialias: true, genesi: true,
+    ambiente: 256, riflessi: true, bloom: true, raggi: true, polvere: 90,
+  },
+  medium: {
+    tier: 'medium', dpr: [1, 1.5], ombre: 'contact', vetroRifrangente: 0, maxOggetti: 4,
+    antialias: true, genesi: true,
+    ambiente: 128, riflessi: false, bloom: false, raggi: true, polvere: 40,
+  },
+  low: {
+    tier: 'low', dpr: [1, 1], ombre: 'none', vetroRifrangente: 0, maxOggetti: 0,
+    antialias: false, genesi: false,
+    ambiente: 0, riflessi: false, bloom: false, raggi: false, polvere: 0,
+  },
 }
 
 export function settingsFor(tier: QualityTier): QualitySettings {

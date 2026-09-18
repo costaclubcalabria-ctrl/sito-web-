@@ -8,6 +8,8 @@ import type { QualitySettings } from '@/lib/quality'
 import { frame, damp } from '@/lib/frame'
 import { useScene } from '@/store/useScene'
 import { ProductObject } from '../objects/ProductObject'
+import { PianoStampa } from '../objects/PianoStampa'
+import { Atmosfera } from '../effects/Atmosfera'
 import { LayerReveal, useLayerRevealPlane } from '../effects/LayerReveal'
 import { campionaPercorso, posizioneOggetto, type Composizione } from './percorso'
 import { fuoco } from '@/lib/sequenza'
@@ -68,6 +70,12 @@ export function HomeScene({ prodotti, settings }: { prodotti: readonly Product[]
 
   return (
     <>
+      {/* Lo spazio prima degli oggetti: il piano che li sostiene e l'aria in
+          mezzo. Sono queste due cose a dare profondita alla scena — gli oggetti
+          da soli sono sagome sospese nel nulla. */}
+      <PianoStampa settings={settings} />
+      <Atmosfera settings={settings} />
+
       {prodotti.map((p, i) => (
         <ProductObject
           key={p.slug}

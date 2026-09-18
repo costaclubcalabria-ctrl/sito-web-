@@ -6,6 +6,8 @@ import * as THREE from 'three'
 import { declassa, settingsFor, type QualitySettings, type QualityTier } from '@/lib/quality'
 import { SceneDirector } from './SceneDirector'
 import { StudioLights } from './lights/StudioLights'
+import { Ambiente } from './lights/Ambiente'
+import { PostFX } from './effects/PostFX'
 import { PointerRig } from './rigs/PointerRig'
 import { PerfWatch } from './rigs/PerfWatch'
 
@@ -66,10 +68,20 @@ export function Scene3D({
         gl.localClippingEnabled = true
       }}
     >
+      {/* La nebbia lega gli oggetti lontani al colore dell'orizzonte.
+          Il colore NON e libero: e quello che il cielo CSS ha all'altezza dello
+          schermo dove le cose spariscono. Se i due non coincidono compare una
+          banda piatta dove finisce la scena e comincia il fondo — il difetto
+          piu evidente della prima versione. */}
+      <fog attach="fog" args={['#160e26', 12, 38]} />
+
       <Suspense fallback={null}>
+        <Ambiente settings={settings} />
         <StudioLights settings={settings} />
         <SceneDirector settings={settings} />
       </Suspense>
+
+      <PostFX settings={settings} />
 
       <PointerRig />
       <PerfWatch onCalo={declassaUnaVolta} />

@@ -47,7 +47,7 @@ export interface Composizione {
 export function posizioneOggetto(i: number): THREE.Vector3 {
   const lato = i % 2 === 0 ? -1 : 1
   const scarto = i === 0 ? 0 : lato * (0.55 + (i % 3) * 0.22)
-  return new THREE.Vector3(scarto, 0.1 + (i % 2) * 0.12, -i * PASSO_Z)
+  return new THREE.Vector3(scarto, 0.34 + (i % 2) * 0.12, -i * PASSO_Z)
 }
 
 interface Chiave {

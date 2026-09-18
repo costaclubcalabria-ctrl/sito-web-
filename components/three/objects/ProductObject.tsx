@@ -144,12 +144,6 @@ export function ProductObject({
         receiveShadow={settings.ombre === 'soft'}
       />
 
-      {/* Alone caldo sotto il piedistallo: suggerisce la luce dell'orizzonte
-          che passa sotto l'oggetto e lo stacca dal buio. Costo: un solo sprite. */}
-      <mesh position={[0, -0.11, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.78, 32]} />
-        <meshBasicMaterial color="#f5c26b" transparent opacity={0.05} depthWrite={false} />
-      </mesh>
     </group>
   )
 }

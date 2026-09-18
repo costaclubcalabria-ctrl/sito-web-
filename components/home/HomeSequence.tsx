@@ -186,7 +186,7 @@ export function HomeSequence({
         <div className="sequenza-inner relative h-full">
           <div
             ref={heroRef}
-            className="sequenza-hero content-grid absolute inset-0 flex items-end pb-[max(5rem,18svh)] will-change-[opacity,transform] sm:items-center sm:pb-0"
+            className="sequenza-hero velo-testo content-grid absolute inset-0 isolate flex items-end pb-[max(5rem,18svh)] will-change-[opacity,transform] sm:items-center sm:pb-0"
           >
             {hero}
           </div>

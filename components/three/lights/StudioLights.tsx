@@ -32,13 +32,13 @@ export function StudioLights({ settings }: { settings: QualitySettings }) {
   return (
     <>
       {/* Ambiente: il rimbalzo generale del cielo. Tenuto basso, il resto lo fanno le direzionali. */}
-      <ambientLight intensity={0.35} color="#6b5a86" />
+      <ambientLight intensity={0.16} color="#6b5a86" />
 
       {/* Key — la luce dell'orizzonte */}
       <directionalLight
         ref={key}
         position={[3.4, 1.6, 2.2]}
-        intensity={3.1}
+        intensity={2.1}
         color="#ffb974"
         castShadow={settings.ombre === 'soft'}
         shadow-mapSize={[2048, 2048]}
@@ -53,13 +53,15 @@ export function StudioLights({ settings }: { settings: QualitySettings }) {
       />
 
       {/* Fill — il cielo dall'alto, freddo */}
-      <directionalLight position={[-2.6, 4.2, 1.4]} intensity={0.85} color="#8ea8ff" />
+      <directionalLight position={[-2.6, 4.2, 1.4]} intensity={0.45} color="#8ea8ff" />
 
       {/* Rim — controluce stretto, è ciò che stacca l'oggetto dal fondo */}
-      <directionalLight position={[-1.2, 0.8, -4]} intensity={2.2} color="#c9b6ff" />
+      <directionalLight position={[-1.2, 0.8, -4]} intensity={1.5} color="#c9b6ff" />
 
-      {/* La luce che sale dall'orizzonte, dietro la scena */}
-      <pointLight position={[0, -1.8, -6]} intensity={22} distance={18} decay={2} color="#f5c26b" />
+      {/* La luce che sale dall'orizzonte, dietro la scena. Sopra il piano, non
+          sotto: sotto non illuminerebbe nulla e la sua unica traccia sarebbe un
+          riflesso speculare sul pavimento. */}
+      <pointLight position={[0, 0.4, -9]} intensity={9} distance={16} decay={2} color="#f5c26b" />
     </>
   )
 }

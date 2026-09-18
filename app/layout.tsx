@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Archivo, Inter, Instrument_Serif } from 'next/font/google'
+import { Syne, Inter, Instrument_Serif } from 'next/font/google'
 import './globals.css'
 
 import { Stage } from '@/components/three/Stage'
@@ -19,11 +19,11 @@ import { t } from '@/i18n'
  * (PLAN.md §8). Deve comparire subito, anche con il font di sistema, e
  * riformattarsi dopo. Un `block` qui costerebbe mezzo secondo di LCP.
  */
-const archivo = Archivo({
+const syne = Syne({
   subsets: ['latin'],
-  variable: '--font-archivo',
+  variable: '--font-syne',
   display: 'swap',
-  axes: ['wdth'],
+  weight: ['400', '600', '700', '800'],
 })
 
 const inter = Inter({
@@ -45,7 +45,7 @@ export const metadata: Metadata = metadataBase()
 export const viewport: Viewport = {
   // Il colore della barra di sistema coincide con la cima del cielo: su mobile
   // la pagina sembra iniziare dal bordo dello schermo.
-  themeColor: '#0d0a1a',
+  themeColor: '#05040f',
   colorScheme: 'dark',
   width: 'device-width',
   initialScale: 1,
@@ -54,12 +54,15 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="it" className={`${archivo.variable} ${inter.variable} ${instrument.variable}`}>
+    <html lang="it" className={`${syne.variable} ${inter.variable} ${instrument.variable}`}>
       <body className="relative min-h-svh antialiased">
-        {/* Il cielo: gradiente CSS puro, visibile prima di qualunque JavaScript.
-            È anche lo sfondo che si vede dietro il canvas trasparente. */}
+        {/* L'atmosfera: quattro livelli di CSS puro, visibili prima di qualunque
+            JavaScript. È anche ciò che si vede dietro il canvas trasparente, e
+            resta identica nel fallback senza WebGL. */}
         <div className="sky" aria-hidden="true" />
+        <div className="sky-stars" aria-hidden="true" />
         <div className="sky-grain" aria-hidden="true" />
+        <div className="sky-vignette" aria-hidden="true" />
 
         <SkipLinks />
 

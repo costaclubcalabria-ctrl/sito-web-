@@ -1,6 +1,9 @@
 # DESIGN.md — Direzione creativa
 
-**Stato: APPROVATO (v1).** Direzione confermata: *Crepuscolo* · brand **STRATO** · hero **C**.
+**Stato: v2.** Direzione: *Crepuscolo* → **"Alba"** · brand **STRATO** · hero **C**.
+La §4 (atmosfera) e la §5 (tipografia) sono state riscritte dopo la revisione
+della Fase 1: il gradiente lineare e il carattere Archivo sono stati sostituiti.
+Il registro storico della v1 resta nelle §1–§3, che non sono cambiate.
 Basata su: 3 reference allegate in chat + analisi di `shop.6tm-magazine.com` + i dati che mi hai confermato.
 
 ---
@@ -109,59 +112,106 @@ Da verificare prima di procedere: disponibilità del dominio e ricerca marchi. N
 
 ---
 
-## 4. Palette — "Crepuscolo"
+## 4. Atmosfera — "Alba" *(riscritta, v2)*
 
-### 4.1 Il cielo (sfondo della scena e della pagina)
+### 4.0 Perché il gradiente lineare non funzionava
 
-Gradiente verticale, che è **lo sfondo del canvas 3D e il fondo del DOM insieme** — devono coincidere al pixel, altrimenti si vede la giuntura.
+La v1 usava un `linear-gradient` da indigo ad ambra, con l'ambra negli ultimi
+punti percentuali. Non funzionava, e il motivo è preciso:
 
-| Stop | Hex | Posizione |
+- **Un gradiente lineare non ha una sorgente.** Legge come un filtro applicato
+  sopra la pagina, non come luce che viene da un posto. Il cervello non ci trova
+  nessuna spiegazione fisica, e quindi non ci crede.
+- **L'ambra in fondo allo schermo veniva coperta dalla scena 3D.** Il piano su
+  cui poggia la composizione taglia lo schermo all'altezza dell'occhio della
+  camera — circa a metà. Tutto ciò che il CSS metteva sotto quella quota era
+  semplicemente invisibile.
+
+### 4.1 Il principio nuovo: c'è un sole, e tutto il resto è la sua conseguenza
+
+> **Il sole sta appena sotto l'orizzonte, al centro.** Non lo si vede: si vede
+> quello che fa. Il nucleo bianco-caldo sulla linea, il bagliore che si allarga,
+> la brace che sale e si raffredda, il cielo che diventa notte in alto, le
+> stelle che sopravvivono solo dove la luce non arriva.
+
+Non è un fondo: è **un'ora del giorno**. Ed è l'ora giusta per questo marchio —
+il momento in cui qualcosa nasce.
+
+### 4.2 ⚠️ Il vincolo che tiene insieme CSS e 3D
+
+> **La linea dell'orizzonte sta al 49% dell'altezza in orizzontale, al 32% in
+> verticale.** Sopra c'è cielo, sotto c'è terreno.
+
+Non è una scelta estetica: è la quota a cui il piano di stampa 3D taglia lo
+schermo, e dipende dall'inquadratura della camera. Il cielo CSS e il piano 3D
+**devono coincidere**, altrimenti compare una banda piatta dove finisce l'uno e
+comincia l'altro — il difetto più evidente della prima versione.
+
+È scritto come variabile CSS `--orizzonte` e commentato in tre punti del codice.
+**Cambiare le chiavi della camera in `percorso.ts` significa ricontrollare
+quella quota.**
+
+### 4.3 I sette strati del cielo
+
+Tutti in CSS puro: **visibili a 0 ms**, prima che una riga di JavaScript venga
+eseguita, e identici nel fallback senza WebGL.
+
+| # | Strato | Ruolo |
 |---|---|---|
-| `--sky-top` | `#0D0A1A` | 0% — notte, indigo quasi nero |
-| `--sky-mid` | `#241A38` | 45% — viola profondo |
-| `--sky-low` | `#4A2E42` | 75% — il viola si scalda |
-| `--sky-horizon` | `#C97B4E` | 96% — ambra bruciata |
-| `--sky-glow` | `#F5C26B` | 100% — la luce all'orizzonte |
+| 1 | Nucleo `#ffe6b8` — ellisse strettissima sulla linea | Il punto più caldo. È il sole. |
+| 2 | Bagliore `#ffc46b` | La luce che lo circonda |
+| 3 | Alone `#b8552f` | Si allarga sopra la linea, mai sotto |
+| 4 | Brace `#5e2437` | Impedisce lo stacco netto tra caldo e freddo |
+| 5 | Due nebulose fredde agli angoli alti | Un cielo piatto non esiste |
+| 6 | Terreno | Sotto la linea la luce cade in fretta, fino a `#07050f` |
+| 7 | Base notturna `#05040f` → `#2c1638` | Il cielo sopra la linea |
 
-L'orizzonte non è mai al centro: sta **in basso, tra il 90% e il 100%** dell'altezza. Il cielo occupa quasi tutto. È ciò che dà l'impressione di volume prima ancora che il 3D si carichi — e infatti è un semplice `linear-gradient` CSS, quindi **è visibile a 0ms, prima di ogni JavaScript**. Questa non è solo estetica: è la strategia per l'LCP (§ 8).
+**Le stelle** sono un SVG in linea: nessuna richiesta di rete, presenti anche nel
+fallback. Si diradano scendendo, perché la luce dell'orizzonte le cancella.
+**La vignettatura** chiude la composizione verso il centro, dove sta l'oggetto.
 
-### 4.2 Vetro (tutti i pannelli UI)
+### 4.4 Cosa aggiunge il 3D all'atmosfera
 
-| Token | Valore | Note |
+Il cielo CSS è il fondo; il WebGL gli dà **spessore**. Senza questi quattro
+elementi gli oggetti sono sagome sospese nel nulla, e il nulla non ha profondità.
+
+| Elemento | Cosa fa | Profilo |
 |---|---|---|
-| `--glass-bg` | `rgba(255,255,255,0.055)` | Riempimento base |
-| `--glass-bg-strong` | `rgba(255,255,255,0.10)` | Pannelli che contengono testo lungo |
-| `--glass-border` | `rgba(255,255,255,0.14)` | Hairline 1px, sempre presente: definisce il bordo |
-| `--glass-blur` | `blur(28px) saturate(1.25)` | La saturazione è ciò che fa sembrare vetro e non plastica |
-| `--glass-shadow` | `0 24px 60px rgba(8,5,20,0.45)` | L'ombra è ciò che lo fa **fluttuare** |
-| Raggio | `24px` (card) · `999px` (pillole, barre) | Angoli molto morbidi, dalle reference |
+| **Piano di stampa** riflettente | Dà un pavimento allo spazio, raddoppia gli oggetti nel riflesso, e la sua griglia è il reticolo di uno slicer | riflettente su *alto*, opaco su *medio* |
+| **Mappa d'ambiente** con `Lightformer` | I materiali riflettono qualcosa. Senza, una plastica satinata sembra gesso. Costruita in scena: **zero byte scaricati**, contro i 2-4 MB di una HDRI | alto 256 px · medio 128 px |
+| **Raggi dall'orizzonte** | Rendono visibile l'aria tra la camera e l'oggetto | alto e medio |
+| **Polvere in sospensione** | Parallasse in primo piano, che le stelle di sfondo non possono dare | 90 · 40 · 0 granelli |
+| **Nebbia** | Lega gli oggetti lontani al colore del terreno | sempre |
+| **Bloom** con soglia 0.86 | Si accende solo ciò che è già incandescente. Con una soglia bassa la scena diventa lattiginosa | solo *alto* |
 
-**Regola ferrea, presa dall'errore della reference C:** mai vetro sopra vetro. Massimo **un livello** di traslucenza tra il testo e la scena 3D. Dove il contrasto scende sotto 4.5:1, il pannello passa a `--glass-bg-strong` con un velo pieno `--sky-top` al 55%. **La leggibilità vince sempre sull'effetto.**
+Gli oggetti restano **sospesi molto sopra il piano**: non ci appoggiano. L'aria
+in mezzo è ciò che rende il riflesso una scelta e non una scorciatoia.
 
-### 4.3 Testo e accenti
+### 4.5 Testo, vetro, accenti
 
 | Token | Hex | Uso |
 |---|---|---|
-| `--text-primary` | `#F6F3FA` | Titoli, corpo |
-| `--text-secondary` | `#B3A9C4` | Meta, didascalie, label |
-| `--text-muted` | `#7A7089` | Note legali, disattivato |
-| `--accent-warm` | `#F5C26B` | **Accento primario.** Prezzo a fuoco, focus ring, linea di stampa, progressione. È la luce dell'orizzonte: viene dalla scena, non è appiccicato sopra. |
-| `--accent-live` | `#5FE3D8` | **Solo per ciò che è "vivo" e interattivo adesso:** hotspot attivo sul modello, indicatore di caricamento, selettore materiale in uso. Dal ciano dei robot della reference A. Mai decorativo. |
-| `--hot` | `#FF6B35` | Solo **"su richiesta"**: badge, step attivo del form preventivo, tempi di produzione. Distingue il *fatto su misura* dal *disponibile subito*. |
+| `--color-ink` | `#f6f3fa` | Titoli, corpo |
+| `--color-ink-soft` | `#b3a9c4` | Meta, didascalie |
+| `--color-ink-muted` | `#7a7089` | Note legali, disattivato |
+| `--color-accent` | `#f5c26b` | **Accento primario.** Prezzo a fuoco, focus ring, linea di stampa. È la luce dell'orizzonte: viene dalla scena, non è appiccicato sopra. |
+| `--color-live` | `#5fe3d8` | Solo ciò che è interattivo **adesso**. Mai decorativo. |
+| `--color-hot` | `#ff6b35` | Solo **"su richiesta"** |
 
-**Contrasti verificati su `--sky-mid` `#241A38`:** `--text-primary` ~13.5:1 · `--text-secondary` ~6.1:1 · `--accent-warm` ~9.2:1 · `--accent-live` ~11.4:1. Tutti oltre AA, i primi due oltre AAA.
+**Il vetro** è un velo **scuro**, non chiaro (`rgb(13 10 26 / 0.74)`): sopra un
+oggetto illuminato un velo bianco non produce contrasto. Mai vetro sopra vetro.
 
-### 4.4 CTA
+**Il velo di leggibilità** è nuovo in v2 ed è una conseguenza diretta
+dell'arricchimento: con un cielo all'alba e un pavimento che riflette, il fondo
+dietro il titolo cambia da un momento all'altro. Un gradiente scuro dal bordo
+sinistro protegge la colonna di testo senza toccare la scena. La regola
+"la leggibilità vince sull'effetto" vale anche per il testo sopra il 3D, non
+solo per i pannelli.
 
-Dalle reference B e C, che usano entrambe la **pillola ad alto contrasto**. Su fondo scuro invertiamo:
-
-- **Primaria:** pillola bianca piena `#F6F3FA`, testo `#0D0A1A`. È l'elemento più luminoso dello schermo. **Una sola per viewport.**
-- **Secondaria:** pillola in vetro, bordo `--glass-border`, testo `--text-primary`.
-- **Terziaria:** testo con sottolineatura animata, nessun contenitore.
-- Pulsante circolare con freccia diagonale ↗ per "avanti / prossimo" (reference C): diventa il nostro elemento di navigazione ricorrente.
-
-### 4.5 Il colore del prodotto
-L'interfaccia è quasi acromatica (viola scuro + bianco + un ambra) **perché il colore vero deve arrivare dai materiali stampati**. Quando l'utente cambia colore sul viewport prodotto, quello deve diventare l'oggetto più colorato dello schermo. Se l'interfaccia è già satura, il selettore materiale perde tutta la sua forza — che è esattamente la funzione che fa vendere.
+**Il colore del prodotto** resta la cosa più satura dello schermo: è per questo
+che l'interfaccia è quasi acromatica. Se l'interfaccia fosse colorata, il
+selettore materiale perderebbe tutta la sua forza — che è esattamente la
+funzione che fa vendere.
 
 ---
 
@@ -171,7 +221,7 @@ L'interfaccia è quasi acromatica (viola scuro + bianco + un ambra) **perché il
 
 | Ruolo | Famiglia | Da dove viene | Perché |
 |---|---|---|---|
-| **Display** | `Archivo` (variabile, asse `wdth`) | Ref A (sans geometrico pesante) | Grotesque industriale con asse di larghezza: titoli larghi e tesi senza caricare un secondo file. |
+| **Display** | `Syne` (400/600/700/800) | Ref A (sans geometrico pesante) | **Sostituisce Archivo in v2.** Archivo era corretto e anonimo: un grotesque che non si distingue da altri dieci. Syne (Bonjour Monde, open source) ha proporzioni volutamente anomale — la `O` è quasi un cerchio perfetto, la `A` ha il vertice tagliato, gli spessori cambiano dove non te lo aspetti. Non si confonde con nulla, ed è ciò che serve a un marchio che deve essere riconosciuto da una parola sola. |
 | **Enfasi** | `Instrument Serif` — **solo corsivo** | Ref B (il mix roman + corsivo) | Una parola sola per titolo. È la firma tipografica del sito: dà calore editoriale a un oggetto tecnico. File unico, ~14 KB. |
 | **Corpo · UI · Tecnico** | `Inter` (variabile) | Ref C (colonne di specifiche) | Leggibilità a corpo piccolo su fondo scuro, `tabular-nums` per i prezzi. |
 
@@ -188,6 +238,21 @@ L'interfaccia è quasi acromatica (viola scuro + bianco + un ambra) **perché il
 | `body-l` | 20px | 18px | Paragrafo introduttivo |
 | `body` | 16px | 16px | Corpo. **Mai sotto 16px su mobile**: evita lo zoom automatico iOS sugli input |
 | `spec` | 12px | 12px | Specifiche. Maiuscolo, tracking `0.14em`, tabellare |
+
+### 5.1-bis Il logotipo
+
+Il carattere da solo non è ancora un marchio. La firma di STRATO sono le
+**linee di stampa dentro le lettere**: non disegnate sopra la parola ma
+**ritagliate nella parola** con `background-clip: text`, quindi esistono solo
+dove c'è inchiostro. È l'oggetto stampato ridotto a cinque lettere.
+
+Al passaggio del mouse una linea ambra attraversa il marchio dal basso verso
+l'alto — la testina che depone uno strato. Una volta, non in loop: è un gesto,
+non un'animazione.
+
+Dove `background-clip: text` non è supportato la parola resta bianca piena. Un
+logotipo invisibile sarebbe un difetto molto peggiore di un logotipo senza le
+sue righe.
 
 ### 5.2 Regole
 
@@ -315,9 +380,12 @@ Tre profili, scelti a runtime (`navigator.hardwareConcurrency`, `deviceMemory`, 
 | | **Alto** | **Medio** | **Basso / fallback** |
 |---|---|---|---|
 | Pixel ratio | fino a 2 | 1.5 | 1 |
-| Ombre | soft, mappa 2048 | contact shadow precalcolata | AO cotta in texture |
-| Vetro rifrangente | sì, 1 oggetto | finto (cubemap statica) | opaco |
-| Post-processing | bloom + vignette | vignette | nessuno |
+| Mappa d'ambiente | 256 px | 128 px | nessuna |
+| Piano di stampa | **riflettente** | opaco | nessuno |
+| Ombre | soft, mappa 2048 | contact shadow | nessuna |
+| Bloom | sì | no | no |
+| Raggi dall'orizzonte | sì | sì | no |
+| Polvere | 90 granelli | 40 | 0 |
 | Oggetti in scena | 8 | 4 | immagini statiche |
 | Blur dei pannelli UI | 28px | 16px | nessuno, fondo pieno |
 | Animazione "genesi" | sì | sì | no |
