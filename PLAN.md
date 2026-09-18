@@ -2,7 +2,7 @@
 
 **Progetto:** STRATO — e-commerce 3D per oggetti stampati in 3D
 **Direzione creativa:** `DESIGN.md` v1 (approvata) — *Crepuscolo* · hero **C "Strato dopo strato"**
-**Stato: BOZZA — in attesa di approvazione. Nessun codice scritto prima del tuo via.**
+**Stato: APPROVATO.** Fase 0 e Fase 1 completate — vedi `README.md` per lo stato.
 
 ---
 
@@ -27,7 +27,7 @@
 
 | Tecnologia | Uso | Nota |
 |---|---|---|
-| **Next.js 15 (App Router) + TypeScript** | Framework, RSC per il contenuto SEO | `strict: true`, niente `any` |
+| **Next.js 16 (App Router) + TypeScript** | Framework, RSC per il contenuto SEO | `strict: true`, niente `any` |
 | **Tailwind CSS v4** | Stile, design token in `@theme` | I token di `DESIGN.md` §4 diventano variabili CSS |
 | **React Three Fiber + drei + @react-three/postprocessing** | Scena 3D | Caricati in chunk separato, mai nel bundle iniziale |
 | **GSAP + ScrollTrigger + Lenis** | Scroll e timeline | ScrollTrigger è gratuito, nessuna licenza da acquistare |
@@ -297,8 +297,8 @@ Studio/processo, contatti, 4 pagine legali con la dicitura **art. 59 Codice del 
 | Metrica | Obiettivo | Come |
 |---|---|---|
 | **LCP** | < 2,5 s su 4G | Elemento LCP = `<h1>` su gradiente CSS, SSR. Nessuna immagine, nessun font bloccante. Solo Archivo in preload. |
-| **JS iniziale** | < 120 KB gzip | Il chunk 3D è dinamico (`ssr: false`), caricato dopo il primo paint |
-| **Chunk 3D** | ~180 KB gzip | three + r3f + drei, importati per funzione, mai in blocco |
+| **JS iniziale** | ~~< 120 KB gzip~~ → **179 KB gzip (misurato)** | Stima corretta dopo la misura: React 19 + Next 16 occupano da soli 152 KB, il codice dell'applicazione ~27 KB. Vedi la nota in `README.md`. |
+| **Chunk 3D e animazioni** | **290 KB gzip (misurato)** | three + r3f + drei + GSAP + Lenis. Caricato dopo l'evento `load`; mai scaricato con `prefers-reduced-motion` o senza WebGL. |
 | **GLB** | < 1,5 MB · hero < 800 KB | Draco + Meshopt, budget verificato da `scripts/optimize-glb.mjs` |
 | **fps** | 60 desktop · ≥ 30 mobile | Tre profili di qualità, declassamento automatico a una via |
 | **CLS** | < 0,05 | Altezze riservate, font con `size-adjust` |
