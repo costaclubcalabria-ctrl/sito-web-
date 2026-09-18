@@ -1,56 +1,52 @@
 @import 'tailwindcss';
 
 /* ============================================================================
-   STRATO — design token, v3 "Stratigrafia"
-   Fonte di verita: DESIGN.md §4. data/strati.ts tiene la sezione stratigrafica.
+   STRATO — design token, v4 "Vetro"
 
-   Il concetto non e un tema applicato sopra: e il meccanismo.
-   - La pagina e una carota geologica: si scende attraverso strati di materiale.
-   - La posizione nello scroll e una PROFONDITA' IN MILLIMETRI, la stessa unita
-     con cui si misura l'altezza di una stampa.
-   - Niente entra in dissolvenza: tutto si DEPOSITA, a strati visibili.
+   Tre principi, e ognuno risolve una richiesta precisa.
+
+   1. IL FONDO E NEUTRO, IL COLORE ARRIVA DAI PEZZI.
+      Nessuna palette di scena: un grigio chiarissimo da cabina di posa. Il
+      solo colore e quello dell'oggetto che stai guardando, e il fondo lo
+      **raccoglie** in un alone larghissimo e tenue (--tinta, scritta dal JS).
+      Cambia pezzo, cambia la luce della stanza.
+
+   2. L'INTERFACCIA E VETRO.
+      Non il glassmorphism piatto: vetro con spessore — bordo speculare che
+      gira, riflesso interno in alto, ombra ambientale sotto. Galleggia sopra
+      la scena e prende la luce da cio che ha dietro.
+
+   3. LO SCORRIMENTO E CONTINUO.
+      Niente soste, niente dissolvenze incrociate: i pezzi e le loro schede
+      scorrono insieme, perche si muovono con lo stesso numero.
    ========================================================================= */
 
 @theme {
-  /* --- Inchiostro e carta ------------------------------------------------- */
-  --color-ink: #17161a;
-  --color-ink-soft: #57545c;
-  --color-ink-muted: #8c8892;
-  --color-paper: #f7f3ea;
-  --color-paper-soft: #e8e2d6;
+  /* --- Neutri ------------------------------------------------------------- */
+  --color-ink: #16161a;
+  --color-ink-soft: #55555e;
+  --color-ink-muted: #8b8b95;
+  /* Un filo piu profondo del bianco: sotto #EAEAEE il vetro non ha niente da
+     rifrangere e legge come una lastra di plastica bianca. Resta neutro. */
+  --color-nebbia: #e7e7ec;
+  --color-nebbia-alta: #f6f6f8;
+  --color-nebbia-bassa: #d2d2d9;
+  --color-carbone: #17171b;
 
-  /* --- Gli strati. Nomi di materiali reali, non di colori ----------------- */
-  --color-gesso: #ede7da;
-  --color-sabbia: #e0d3b8;
-  --color-ocra: #cfa65b;
-  --color-terracotta: #a4542f;
-  --color-ardesia: #3f464f;
-  --color-basalto: #23262b;
-
-  /* --- La testina ---------------------------------------------------------
-     Un solo accento, e non e un colore d'interfaccia generico: e la
-     temperatura dell'ugello. Compare dove qualcosa sta per essere prodotto o
-     dove si deve agire. Mai decorativo. */
+  /* --- L'ugello: il solo accento d'interfaccia ---------------------------- */
   --color-ugello: #ff4d1f;
-
-  /* --- Spessore dello strato ---------------------------------------------
-     La misura piu importante del sistema. Ogni linea, ogni passo di griglia,
-     ogni gradino delle animazioni e un multiplo di questo valore. */
-  --strato: 4px;
 
   /* --- Tipografia --------------------------------------------------------- */
   --font-display: var(--font-syne), 'Syne', system-ui, sans-serif;
   --font-sans: var(--font-inter), 'Inter', system-ui, sans-serif;
-  /* Il monospace non e un vezzo: profondita, quote, spessori e tempi sono
-     misure, e le misure si incolonnano. */
   --font-mono: var(--font-mono-jb), 'JetBrains Mono', ui-monospace, monospace;
 
-  --text-display-xl: clamp(3rem, 8.4vw, 7rem);
-  --text-display-xl--line-height: 0.9;
-  --text-display-xl--letter-spacing: -0.035em;
+  --text-display-xl: clamp(3rem, 8.6vw, 7.5rem);
+  --text-display-xl--line-height: 0.88;
+  --text-display-xl--letter-spacing: -0.04em;
 
   --text-display-l: clamp(2.25rem, 5.2vw, 4.25rem);
-  --text-display-l--line-height: 0.95;
+  --text-display-l--line-height: 0.94;
   --text-display-l--letter-spacing: -0.03em;
 
   --text-index: clamp(2.5rem, 6.5vw, 5.5rem);
@@ -68,15 +64,20 @@
   --text-quota--line-height: 1.3;
   --text-quota--letter-spacing: 0.1em;
 
+  /* --- Vetro -------------------------------------------------------------- */
+  /* Il raggio e grande e costante: e cio che fa leggere una superficie come
+     una lastra invece che come un rettangolo con gli angoli smussati. */
+  --raggio-vetro: 26px;
+  --raggio-vetro-piccolo: 18px;
+
   /* --- Motion ------------------------------------------------------------- */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
   --duration-micro: 180ms;
   --duration-element: 520ms;
 
-  /* Niente angoli morbidi: un oggetto stampato ha spigoli. Il solo raggio
-     ammesso e quello dei controlli, e vale esattamente uno strato. */
-  --radius-strato: var(--strato);
+  /* Lo spessore di uno strato: resta la grana del sistema (linee, passi). */
+  --strato: 4px;
 }
 
 /* ============================================================================
@@ -86,21 +87,10 @@
 @layer base {
   :root {
     color-scheme: light;
-    /* Lo strato corrente. Scritto dal JavaScript mentre si scende, e letto da
-       tutto il resto: e cosi che l'intera pagina cambia materiale insieme. */
-    --bg-corrente: var(--color-gesso);
-    --ink-corrente: var(--color-ink);
-    --ink-corrente-soft: var(--color-ink-soft);
-    --linea-corrente: rgb(23 22 26 / 0.16);
-  }
-
-  /* Strati profondi: si inverte. Lo decide lo strato (data/strati.ts), non il
-     componente — cosi il contrasto non puo essere sbagliato in un punto solo. */
-  :root[data-strato-scuro='1'] {
-    color-scheme: dark;
-    --ink-corrente: var(--color-paper);
-    --ink-corrente-soft: rgb(247 243 234 / 0.72);
-    --linea-corrente: rgb(247 243 234 / 0.22);
+    /* La tinta del pezzo a fuoco. La scrive Tinta.tsx; qui il valore neutro
+       di partenza, cosi la pagina e corretta anche prima del JS. */
+    --tinta: 155 155 165;
+    --tinta-forza: 0;
   }
 
   * {
@@ -110,20 +100,17 @@
   html {
     scroll-behavior: auto;
     -webkit-text-size-adjust: 100%;
-    background: var(--color-gesso);
+    background: var(--color-nebbia);
   }
 
   body {
-    /* Il colore del corpo e quello dello strato che si sta attraversando.
-       Non e un gradiente: e una successione di materiali. */
-    background-color: var(--bg-corrente);
-    color: var(--ink-corrente);
+    background: var(--color-nebbia);
+    color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 1rem;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     overflow-x: clip;
-    transition: background-color 120ms linear;
   }
 
   h1,
@@ -142,16 +129,15 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Il focus e un rettangolo, non un anello morbido: coerente con il resto. */
   :focus-visible {
-    outline: var(--strato) solid var(--color-ugello);
-    outline-offset: 2px;
-    border-radius: 0;
+    outline: 2px solid var(--color-ugello);
+    outline-offset: 3px;
+    border-radius: 6px;
   }
 
   ::selection {
     background: var(--color-ugello);
-    color: var(--color-paper);
+    color: #fff;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -167,79 +153,204 @@
 }
 
 /* ============================================================================
-   Il deposito — la firma di movimento del sito.
-
-   Niente entra in dissolvenza. Tutto si deposita: una maschera a gradini
-   scopre il contenuto dal basso verso l'alto, e i gradini sono visibili.
-   Non e una transizione di opacita mascherata: sono strati che si posano.
-
-   `--deposito` va da 0 (niente) a 1 (tutto), e lo scrive lo scroll.
+   La stanza — il fondo neutro, e la luce che prende dal pezzo
    ========================================================================= */
 
 @layer components {
-  .deposito {
-    --deposito: 0;
-    /* La maschera e una scala a gradini: ogni gradino e uno strato di 4px.
-       Sotto la soglia e opaco, sopra e trasparente, e il bordo e NETTO —
-       un bordo sfumato darebbe una dissolvenza, che e esattamente cio che
-       non vogliamo. */
-    -webkit-mask-image: linear-gradient(
-      to top,
-      #000 0,
-      #000 calc(var(--deposito) * 100%),
-      transparent calc(var(--deposito) * 100%),
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      to top,
-      #000 0,
-      #000 calc(var(--deposito) * 100%),
-      transparent calc(var(--deposito) * 100%),
-      transparent 100%
-    );
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
+  /* Strato 1: la cabina di posa. Non un colore piatto: un fondo chiaro con la
+     luce che cade dall'alto e si scurisce verso il basso, come una parete di
+     studio. E' l'unica cosa che si vede prima del JavaScript. */
+  .stanza {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 82% at 50% -12%, var(--color-nebbia-alta) 0%, transparent 62%),
+      radial-gradient(90% 60% at 50% 118%, var(--color-nebbia-bassa) 0%, transparent 66%),
+      var(--color-nebbia);
   }
 
-  /* La linea della testina: dove il deposito sta arrivando adesso. */
-  .deposito-testina {
-    position: relative;
+  /* Strato 2: la tinta. Un alone larghissimo del colore del pezzo a fuoco.
+     Molto tenue di proposito — deve **sembrare luce riflessa**, non un fondo
+     colorato: il fondo resta neutro, e il colore resta dell'oggetto. */
+  .tinta {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: var(--tinta-forza);
+    transition: opacity 600ms var(--ease-in-out-soft);
+    background:
+      radial-gradient(
+        62% 50% at 46% 64%,
+        rgb(var(--tinta) / 0.3) 0%,
+        rgb(var(--tinta) / 0.1) 46%,
+        transparent 74%
+      ),
+      radial-gradient(44% 32% at 18% 20%, rgb(var(--tinta) / 0.13) 0%, transparent 72%);
   }
-  .deposito-testina::after {
+
+  /* Passato il fiume la tinta resta, ma sottovoce: sotto ci sono liste e testi
+     da leggere, e un alone verde o rosso su una distinta di prezzi non e luce
+     riflessa da un oggetto — e solo un fondo colorato. */
+  :root[data-scena='0'] .tinta {
+    opacity: calc(var(--tinta-forza) * 0.32);
+  }
+
+  /* Strato 3: la grana. Un fondo chiarissimo senza grana mostra il banding di
+     ogni gradiente. Costo: zero richieste, e un SVG in linea. */
+  .grana {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+/* ============================================================================
+   IL VETRO
+
+   Non e il glassmorphism piatto (un velo bianco + blur). Quello legge come
+   carta velina. Qui il vetro ha **spessore**, e lo spessore si vede in tre
+   cose, tutte necessarie:
+
+   1. il **bordo speculare** — non un bordo uniforme: un gradiente che gira,
+      brillante dove la luce lo prende e quasi invisibile dove no;
+   2. il **riflesso interno** in alto, che suggerisce una superficie curva;
+   3. l'**ombra ambientale** sotto, staccata, che lo solleva dal fondo.
+
+   ⚠️ Una nota onesta sulla rifrazione: il vero effetto Apple sposta i pixel
+   dietro il bordo (una lente). A oggi si ottiene solo con
+   `backdrop-filter: url(#filtro)` e un displacement map SVG, che funziona in
+   Chrome e non in Safari ne in Firefox — cioe non funziona proprio dove
+   l'utente si aspetta di vederlo. Quindi non c'e: bordo speculare, riflesso e
+   saturazione del fondo fanno la quasi totalita della resa, in tutti i
+   browser. Quando `backdrop-filter: url()` sara supportato si aggiunge qui,
+   dietro un `@supports`, senza toccare nient'altro.
+   ========================================================================= */
+
+@layer components {
+  .vetro,
+  .vetro-scheda {
+    position: relative;
+    border-radius: var(--raggio-vetro);
+    isolation: isolate;
+    box-shadow:
+      /* Il riflesso sul bordo interno alto: e' lo spessore della lastra. */
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      inset 0 -1px 0 rgb(255 255 255 / 0.3),
+      /* L'ombra ambientale, staccata: solleva il vetro dal fondo. */
+      0 1px 2px rgb(20 20 28 / 0.06),
+      0 12px 28px -10px rgb(20 20 28 / 0.22),
+      0 32px 64px -24px rgb(20 20 28 / 0.18);
+  }
+
+  /* Vetro sottile: barre, controlli, indicatori. Il fondo si vede attraverso. */
+  .vetro {
+    background: rgb(255 255 255 / 0.42);
+  }
+
+  /* Vetro spesso: tutto cio che contiene testo da leggere.
+     La regola non e negoziabile — la leggibilita vince sull'effetto. Sopra una
+     scena che cambia continuamente, un vetro sottile non garantisce contrasto. */
+  .vetro-scheda {
+    background: rgb(255 255 255 / 0.74);
+  }
+
+  /*
+   * ⚠️ L'ORDINE DELLE DUE RIGHE NON E COSMETICO.
+   *
+   * Il prefisso `-webkit-` va **prima**, la proprieta standard **dopo**. Al
+   * contrario il minificatore (Lightning CSS, dentro la pipeline di Next)
+   * considera la seconda dichiarazione la versione buona della prima, tiene
+   * quella e ricalcola i prefissi: nel CSS compilato restava **solo**
+   * `-webkit-backdrop-filter`.
+   *
+   * E Chrome non supporta `-webkit-backdrop-filter`
+   * (`CSS.supports('-webkit-backdrop-filter','blur(1px)')` e `false`): il vetro
+   * era un velo bianco al 52% senza nessuna sfocatura, e i pezzi che passavano
+   * dietro le schede si vedevano nitidi attraverso il testo. Cioe l'effetto
+   * centrale di questa versione era spento nel browser della maggior parte
+   * delle persone, e nel codice sorgente sembrava perfetto.
+   *
+   * Trovato misurando il CSS compilato, non leggendo il sorgente.
+   */
+  @supports (backdrop-filter: blur(1px)) {
+    .vetro {
+      background: rgb(255 255 255 / 0.2);
+      -webkit-backdrop-filter: blur(20px) saturate(190%) brightness(1.06);
+      backdrop-filter: blur(20px) saturate(190%) brightness(1.06);
+    }
+    .vetro-scheda {
+      background: rgb(255 255 255 / 0.52);
+      -webkit-backdrop-filter: blur(28px) saturate(170%) brightness(1.04);
+      backdrop-filter: blur(28px) saturate(170%) brightness(1.04);
+    }
+  }
+
+  /* Il bordo speculare. Un gradiente su un anello di 1px, ritagliato con una
+     maschera: il bordo e brillante in alto a sinistra e in basso a destra,
+     quasi invisibile sugli altri due lati. E' quello che fa leggere un bordo
+     come uno spigolo di vetro invece che come un contorno disegnato. */
+  .vetro::before,
+  .vetro-scheda::before {
     content: '';
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: calc(var(--deposito) * 100%);
-    height: 1px;
-    background: var(--color-ugello);
-    opacity: calc((1 - var(--deposito)) * var(--deposito) * 4);
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      142deg,
+      rgb(255 255 255 / 0.95) 0%,
+      rgb(255 255 255 / 0.28) 26%,
+      rgb(140 140 155 / 0.12) 52%,
+      rgb(255 255 255 / 0.3) 74%,
+      rgb(255 255 255 / 0.85) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
     pointer-events: none;
+    z-index: 2;
   }
 
-  /* Un pannello. Carta piena, spigoli vivi, una linea di contorno.
-     Nessun vetro: il vetro non c'entra niente con un oggetto stampato. */
-  .foglio {
-    background: var(--color-paper);
-    color: var(--color-ink);
-    border: 1px solid rgb(23 22 26 / 0.14);
-    border-radius: 0;
-    /* L'ombra e un offset secco, non una sfumatura: un foglio appoggiato. */
-    box-shadow: calc(var(--strato) * 2) calc(var(--strato) * 2) 0 rgb(23 22 26 / 0.1);
+  /* Il riflesso interno: una macchia chiara in alto, larga e morbida.
+     Suggerisce una superficie leggermente convessa. */
+  .vetro::after,
+  .vetro-scheda::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
+    background: radial-gradient(130% 70% at 24% -18%, rgb(255 255 255 / 0.55) 0%, transparent 58%);
   }
 
-  /* Il riquadro sulle strate profonde. */
-  .foglio-scuro {
-    background: rgb(23 22 26 / 0.82);
-    color: var(--color-paper);
-    border: 1px solid rgb(247 243 234 / 0.18);
-    border-radius: 0;
-    box-shadow: calc(var(--strato) * 2) calc(var(--strato) * 2) 0 rgb(0 0 0 / 0.25);
+  /* Il contenuto sta sopra riflesso e bordo. */
+  .vetro > *,
+  .vetro-scheda > * {
+    position: relative;
+    z-index: 3;
   }
 
-  /* Le quote: profondita, spessori, misure. Sempre monospaziate e incolonnate. */
+  /* Un divisorio dentro il vetro: una linea chiara sopra una scura, come una
+     giunzione fra due lastre. */
+  .vetro-linea {
+    border-top: 1px solid rgb(22 22 26 / 0.08);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7);
+  }
+
+  /* Le quote: misure, sempre monospaziate e incolonnate. */
   .quota {
     font-family: var(--font-mono);
     font-size: var(--text-quota);
@@ -247,33 +358,7 @@
     letter-spacing: var(--text-quota--letter-spacing);
     text-transform: uppercase;
     font-variant-numeric: tabular-nums;
-    color: var(--ink-corrente-soft);
-  }
-
-  /* La cucitura fra due strati: la riga dove un materiale finisce e comincia
-     il successivo. E' l'unico "bordo" del sistema, e va vista. */
-  .cucitura {
-    position: relative;
-  }
-  .cucitura::before {
-    content: '';
-    position: absolute;
-    inset-inline: 0;
-    top: 0;
-    height: 1px;
-    background: var(--linea-corrente);
-  }
-
-  /* Il reticolo di strati: righe orizzontali ogni 4px, appena percepibili.
-     E' la texture del sito, e non e un'immagine. */
-  .reticolo {
-    background-image: repeating-linear-gradient(
-      to bottom,
-      var(--linea-corrente) 0,
-      var(--linea-corrente) 1px,
-      transparent 1px,
-      transparent var(--strato)
-    );
+    color: var(--color-ink-muted);
   }
 }
 
@@ -287,16 +372,6 @@
     margin-inline: auto;
     padding-inline: clamp(1rem, 4vw, 3.5rem);
     max-width: 96rem;
-  }
-
-  /* Da 1024 px l'indicatore di profondita occupa la fascia destra: il
-     contenuto gli lascia la corsia invece di finirgli sotto. E' una gabbia
-     asimmetrica, e va dichiarata una volta qui — non compensata a mano in
-     ogni sezione. */
-  @media (min-width: 1024px) {
-    .content-grid {
-      padding-right: clamp(7rem, 10vw, 11rem);
-    }
   }
 
   .measure {
@@ -323,13 +398,14 @@
    ========================================================================= */
 .logo {
   display: inline-block;
+  --righe: var(--color-ink);
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 1.0625rem;
   line-height: 1;
   letter-spacing: 0.16em;
   margin-right: -0.16em;
-  color: var(--ink-corrente);
+  color: var(--color-ink);
 }
 
 .logo-word {
@@ -339,7 +415,6 @@
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
   .logo-word {
     background-image:
-      /* 1. la testina: fuori campo finche non si passa sopra */
       linear-gradient(
         180deg,
         transparent 44%,
@@ -347,26 +422,18 @@
         var(--color-ugello) 52%,
         transparent 56%
       ),
-      /* 2. gli strati, cavati nel pieno */
       repeating-linear-gradient(
         180deg,
-        transparent 0 calc(var(--strato) - 1px),
-        rgb(255 255 255 / 0.001) calc(var(--strato) - 1px) var(--strato)
-      ),
-      repeating-linear-gradient(
-        180deg,
-        var(--ink-corrente) 0 calc(var(--strato) - 1px),
+        var(--righe, var(--color-ink)) 0 calc(var(--strato) - 1px),
         transparent calc(var(--strato) - 1px) var(--strato)
       );
     background-size:
       100% 320%,
-      100% 100%,
       100% 100%;
     background-position:
       0 -160%,
-      0 0,
       0 0;
-    background-repeat: no-repeat, repeat, repeat;
+    background-repeat: no-repeat, repeat;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -383,13 +450,11 @@
   from {
     background-position:
       0 220%,
-      0 0,
       0 0;
   }
   to {
     background-position:
       0 -160%,
-      0 0,
       0 0;
   }
 }
@@ -401,65 +466,23 @@
   }
 }
 
-/* ============================================================================
-   Sequenza in modalita statica.
-   Vale con `prefers-reduced-motion` e con JavaScript disattivato: gli strati si
-   impilano e si leggono uno dopo l'altro. Stesso contenuto, nessun movimento.
-   ========================================================================= */
-.sequenza-statica {
-  height: auto !important;
-}
-.sequenza-statica .sequenza-viewport {
-  position: static;
-  height: auto;
-  overflow: visible;
-}
-.sequenza-statica .sequenza-inner {
-  display: block;
-  padding-block: clamp(4rem, 12vh, 8rem);
-}
-.sequenza-statica .sequenza-hero {
-  position: static;
-  display: block;
-  width: auto;
-  padding-bottom: 0;
-}
-.sequenza-statica [data-pannello] {
-  position: static;
-  display: block;
-  width: auto;
-  max-width: 38rem;
-  padding-bottom: 0;
-  margin-block: clamp(2rem, 6vh, 4rem);
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: none !important;
-  pointer-events: auto !important;
-}
-.sequenza-statica .deposito {
-  -webkit-mask-image: none;
-  mask-image: none;
-}
+/* Testo a strati: l'enfasi tipografica parla la stessa lingua del logotipo.
 
-/* ============================================================================
-   Testo a strati.
-
-   L'enfasi tipografica non e piu un corsivo di un'altra famiglia (che era la
-   firma della direzione precedente, ed era un prestito): le parole che portano
-   il significato sono **cavate a strati**, con le stesse righe del logotipo.
-   Il marchio e il titolo dicono la stessa cosa nello stesso modo.
-   ========================================================================= */
+   ⚠️ Il colore delle righe NON puo essere `currentColor`: su questo elemento
+   `color` vale `transparent` (serve a far vedere il ritaglio), quindi
+   currentColor risolverebbe a trasparente e il testo sparirebbe del tutto.
+   E' esattamente il bug che ha fatto scomparire "strato dopo strato" dall'hero.
+   Serve un colore dichiarato. */
 .strati-testo {
   display: inline;
-  font-family: inherit;
-  font-weight: inherit;
+  --righe: var(--color-ink);
 }
 
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
   .strati-testo {
     background-image: repeating-linear-gradient(
       180deg,
-      var(--ink-corrente) 0 calc(var(--strato) - 1px),
+      var(--righe) 0 calc(var(--strato) - 1px),
       transparent calc(var(--strato) - 1px) var(--strato)
     );
     -webkit-background-clip: text;
@@ -471,13 +494,56 @@
 
 /* ============================================================================
    Il palco 3D esiste solo dove serve.
-   Fuori dalla sequenza dei prodotti la scena non ha niente da dire, e un pezzo
-   appeso al bordo dello schermo sarebbe un difetto. L'attributo lo scrive
-   HomeSequence; qui c'e solo la dissolvenza.
    ========================================================================= */
+.logo.\!text-white,
+.su-scuro .logo {
+  --righe: #ffffff;
+  color: #ffffff;
+}
+
 .palco {
   transition: opacity 320ms var(--ease-in-out-soft);
 }
 :root[data-scena='0'] .palco {
   opacity: 0;
+}
+
+/* ============================================================================
+   Il fiume in modalita statica.
+   Vale con `prefers-reduced-motion` e con JavaScript disattivato: le schede si
+   impilano e si leggono una dopo l'altra. Stesso contenuto, nessun movimento.
+   ========================================================================= */
+.fiume-statico {
+  height: auto !important;
+}
+.fiume-statico .fiume-viewport {
+  position: static;
+  height: auto;
+  overflow: visible;
+}
+.fiume-statico .fiume-binario {
+  position: static;
+  display: grid;
+  gap: clamp(1.5rem, 4vh, 3rem);
+  width: auto;
+  transform: none !important;
+  padding-block: clamp(3rem, 10vh, 7rem);
+}
+.fiume-statico .fiume-hero {
+  position: static;
+  display: block;
+  width: auto;
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+  padding-bottom: clamp(3rem, 8vh, 5rem);
+}
+.fiume-statico [data-scheda] {
+  position: static;
+  width: auto;
+  max-width: 34rem;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  pointer-events: auto !important;
 }

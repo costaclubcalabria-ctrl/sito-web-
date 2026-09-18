@@ -1,20 +1,41 @@
 # DESIGN.md — Direzione creativa
 
-**Stato: v3 — "Stratigrafia".** Brand **STRATO**.
+**Stato: v4 — "Vetro".** Brand **STRATO**.
 
-Le versioni v1 (*Crepuscolo*) e v2 (*Alba*) sono state scartate dopo revisione.
-Entrambe erano cieli notturni con oggetti sospesi: belle, ma **il concetto era
-decorazione**. Le linee di stampa erano un motivo grafico sopra un sito che
-avrebbe funzionato identico senza di esse.
+Tre versioni scartate prima di questa, e vale la pena dire perche: servono a
+spiegare cos'e questa.
 
-La v3 riparte da una richiesta precisa: *"imposta tutto sul concetto di strato,
-dal funzionamento del sito al layout"*. Qui lo strato non è un tema applicato
-sopra: è il **meccanismo**. Chi volesse togliere gli strati da questa versione
-dovrebbe riscrivere il sito, non ritoccare una palette.
+| | Direzione | Perche e stata scartata |
+|---|---|---|
+| **v1** | *Crepuscolo* — cielo notturno in gradiente, oggetti sospesi | *"Non mi piace quel layout con gradiente… deve essere qualcosa di sensazionale"*. E il concetto era decorazione: le linee di stampa erano un motivo grafico sopra un sito che avrebbe funzionato identico senza. |
+| **v2** | *Alba* — cielo stratificato, piatto riflettente | Stesso problema, piu bello. |
+| **v3** | *Stratigrafia* — strati geologici, lo scroll come testina | Il meccanismo era giusto, il risultato era **scuro e archeologico**: un sito che raccontava un processo invece di vendere un oggetto. |
+
+La v4 risponde a quattro richieste precise, e ognuna e diventata una regola:
+
+1. **I due oggetti allegati come esempi** → il catalogo e costruito intorno a
+   loro: il busto del **David** in tinta piena e la lampada a blocco. Entrambi
+   portano un'avvertenza legale, che sta nella §8 e in testa a
+   `data/products.ts`: non sono dettagli, sono due rischi reali.
+2. **"Una soluzione neutra ma molto figa dietro, con i colori accesi degli
+   oggetti stampati"** → la **stanza** e un grigio chiarissimo da cabina di
+   posa; l'unico colore in pagina e quello del pezzo che stai guardando, e il
+   fondo lo raccoglie in un alone larghissimo (§4). Cambi pezzo, cambia la luce
+   della stanza.
+3. **"Usa tipo il liquid glass di Apple"** → tutta l'interfaccia e vetro con
+   spessore, non il glassmorphism piatto (§5). Con una nota onesta su cosa di
+   quell'effetto **non** e riproducibile oggi, e perche non l'ho finto.
+4. **"Uno scorrimento continuo nella home con gli oggetti 3d che si muovono"**
+   → la home e un **fiume**: i pezzi non si fermano mai e ogni scheda scorre
+   attaccata al suo pezzo (§2).
 
 La §1 (analisi delle reference) e la §3 (il nome) restano dalla v1: sono ancora
-gli input. Tutto il resto è nuovo.
-Basata su: 3 reference allegate in chat + analisi di `shop.6tm-magazine.com` + i dati che mi hai confermato.
+gli input. Tutto il resto e nuovo.
+
+> Nota di metodo. Quasi tutto quello che sta qui sotto e stato **verificato a
+> schermo**, non ragionato: ogni versione di questa pagina e stata fotografata
+> su desktop e su mobile e corretta su quello che si vedeva. I difetti trovati
+> cosi sono elencati nella §13, perche sono la parte piu utile del documento.
 
 ---
 
@@ -81,43 +102,46 @@ Prendo la disciplina che alle tre immagini manca: **un messaggio per blocco**, m
 
 ---
 
-## 2. Il principio: lo scroll è la testina
+## 2. Il principio: la home e un fiume
 
-> **Lo scroll non muove una camera davanti a oggetti finiti. Deposita.**
-> Ogni prodotto si stampa mentre lo raggiungi, strato dopo strato. Se torni
-> indietro, si s-stampa.
+**La camera non si muove. Scorrono i pezzi.**
 
-Non è un'animazione che parte e finisce: è una **funzione della posizione**.
-Fermi il dito a metà e il pezzo resta a metà. È la regola 2 del motion — *il
-movimento obbedisce al dito* — portata alle sue conseguenze invece di essere
-dichiarata e poi aggirata.
+Una camera fissa, frontale, come quella puntata su un banco di posa. I pezzi
+attraversano l'inquadratura in continuo su una traiettoria ad arco: arrivano da
+destra, passano vicini al punto di posa, escono a sinistra rimpicciolendo. Non
+ci sono soste, non ci sono dissolvenze incrociate, non ci sono "schermate": la
+pagina ha una **corsa**.
 
-La stessa funzione guida tre cose insieme, e leggono **lo stesso numero**:
+### Un solo numero muove tutto
 
-1. **l'oggetto 3D**, tramite un piano di taglio la cui quota sale;
-2. **il testo della scheda**, tramite una maschera a gradini che lo scopre dal
-   basso (`--deposito`);
-3. **la linea della testina**, che è dove il deposito sta arrivando adesso.
+E la regola architetturale piu importante del progetto, e nasce da un difetto
+che si e ripresentato in tutte le versioni precedenti: **il testo che racconta
+un pezzo diverso da quello che vedi.**
 
-Due curve diverse li farebbero arrivare sfasati di poco, ed è il tipo di
-difetto che si nota senza saper dire perché.
+Qui la posizione della fila e un numero, `s`. La distanza di un pezzo dal punto
+di posa e `d = i − s`. Da `d` dipendono: dove sta il pezzo, quanto e grande,
+quanto e opaco, e **dove sta la sua scheda nel DOM e quanto e opaca**. Testo e
+oggetto non possono desincronizzarsi perche leggono lo stesso numero, e la
+conversione fra unita di scena e pixel (`pixelPerUnita`, da fov e distanza
+della camera) e **una sola funzione** condivisa, non due copie.
 
-### Le tre conseguenze sul funzionamento del sito
+La scheda non sta ferma cambiando contenuto: **appartiene al pezzo** e si muove
+con lui. Percorre una frazione della corsa del pezzo (0,36) — una parallasse
+fra un piano vicino e uno lontano, non una desincronizzazione: entrano, passano
+a fuoco ed escono nello stesso istante.
 
-**La pagina è una carota geologica.** Si comincia in superficie, nella luce, e
-scendendo si attraversano materiali sempre più profondi fino al basalto del
-footer. Il colore di fondo non è un tema: è **lo strato che stai attraversando**,
-e cambia in continuo mentre scorri.
+### Le conseguenze sul funzionamento del sito
 
-**La posizione è una profondità in millimetri.** Non una percentuale, non una
-barra: `000 mm` … `240 mm`, la stessa unità con cui si misura l'altezza di una
-stampa. L'indicatore laterale è la colonna di un log di sondaggio, e ogni tacca
-è anche un salto a quello strato.
-
-**La camera non viaggia: è la linea che scorre.** Nelle versioni precedenti la
-camera attraversava un paesaggio — generico, ed è ciò che fa qualunque sito 3D.
-Qui la camera è fissa e frontale, come quella puntata su un piatto di stampa, e
-i pezzi le passano davanti uno alla volta.
+- **Niente stato React per frame.** Sessanta re-render al secondo dell'albero
+  sarebbero il collo di bottiglia. Lo stato per-frame vive in un modulo
+  (`lib/frame.ts`), scritto dal DOM e letto dentro `useFrame`.
+- **Il canvas non si smonta mai.** Sta nel layout, non nelle pagine: un cambio
+  di rotta e un movimento di camera, non un rimontaggio.
+- **La matematica del fiume non importa `three`.** Sta in `lib/fiume.ts`, cosi
+  il DOM la usa senza tirarsi dietro 900 KB di libreria 3D. Questa unica
+  separazione vale 99 KB gzip sul percorso critico — misurati.
+- **Sei pezzi nel fiume, dieci in catalogo.** Il fiume e la vetrina, non
+  l'inventario.
 
 ---
 
@@ -146,75 +170,112 @@ Da verificare prima di procedere: disponibilità del dominio e ricerca marchi. N
 
 ---
 
-## 4. Materia — la sezione stratigrafica
+## 4. La stanza e la tinta
 
-Non è una palette: è una **sezione**. I nomi sono di materiali, non di colori, e
-non per vezzo — terracotta, sabbia, ocra e ardesia sono colori di filamento che
-produciamo davvero. La palette del sito e quella del catalogo sono la stessa cosa.
+### Il fondo e neutro, il colore arriva dai pezzi
 
-Fonte di verità: `data/strati.ts`.
+```
+--color-nebbia        #E7E7EC   la stanza
+--color-nebbia-alta   #F6F6F8   la luce che cade dall'alto
+--color-nebbia-bassa  #D2D2D9   l'ombra che sale dal basso
+--color-ink           #16161A   il testo
+--color-carbone       #17171B   il footer, l'unica superficie scura
+--color-ugello        #FF4D1F   il solo accento d'interfaccia
+```
 
-| Quota | Strato | Hex | Testo | Contrasto |
-|---|---|---|---|---|
-| 000 mm | Gesso | `#EDE7DA` | inchiostro `#17161A` | 14,0:1 |
-| 040 mm | Sabbia | `#E0D3B8` | inchiostro | 11,7:1 |
-| 096 mm | Ocra | `#CFA65B` | inchiostro | 7,4:1 |
-| 152 mm | Terracotta | `#A4542F` | carta `#F7F3EA` | 5,6:1 |
-| 196 mm | Ardesia | `#3F464F` | carta | 9,1:1 |
-| 240 mm | Basalto | `#23262B` | carta | 13,4:1 |
+Non c'e una palette di scena, e questa e la scelta centrale della versione: una
+palette di brand colorata e in **concorrenza** con dieci oggetti stampati in
+nove colori saturi. Il fondo sta a zero e lascia parlare i pezzi.
 
-**L'inversione avviene fra ocra e terracotta, e il codice non può sbagliarla:**
-ogni strato dichiara il proprio colore di testo in `data/strati.ts`, e
-`Stratigrafia.tsx` lo scrive su `:root`. Nessun componente decide da sé se è su
-uno strato chiaro o profondo — lo sa perché lo strato glielo dice. È così che il
-contrasto non può essere sbagliato in un punto solo. L'inversione è **di scatto**,
-a metà del passaggio: un testo che sfuma da inchiostro a carta passa per un
-grigio illeggibile.
+**Perche `#E7E7EC` e non il bianco.** Provato: sopra `#EAEAEE` il vetro non ha
+niente da rifrangere e legge come una lastra di plastica bianca. La stanza va
+un filo piu profonda del bianco perche il vetro abbia qualcosa da fare. Resta
+neutra: e grigia, non azzurra.
 
-### L'ugello — l'unico accento
+**La tinta.** Il colore del pezzo a fuoco viene scritto su `:root` come
+`--tinta`, e il fondo lo raccoglie in due aloni larghissimi e tenui. Deve
+sembrare **luce riflessa**, non un fondo colorato — e una taratura delicata:
+alla prima prova era al 46% e la pagina diventava rosa. Ora e al 30%, e sotto
+il fiume (dove ci sono liste e prezzi da leggere) scende a un terzo.
 
-`#FF4D1F`. Non è un colore d'interfaccia generico: è la **temperatura
-dell'ugello**. Compare dove qualcosa sta per essere prodotto — la CTA del
-preventivo, la linea della testina, l'istruzione "scorri per stampare", lo strato
-corrente nell'indicatore. Mai decorativo.
+Il colore di presentazione e **dichiarato dal prodotto**, non dedotto dal
+materiale: su un fondo chiaro un pezzo bianco non si vede. Sta in
+`ProductModel.colore` ed e un requisito di leggibilita, non una preferenza.
 
-### Lo spessore dello strato — `--strato: 4px`
+### La griglia
 
-La misura più importante del sistema. Ogni linea, ogni passo di griglia, ogni
-gradino delle maschere di deposito, il raggio dei controlli e l'offset delle
-ombre sono multipli di questo valore. Cambiarlo cambia la grana di tutto il sito.
-
-### Niente vetro, niente angoli morbidi
-
-Il glassmorphism delle v1 e v2 è stato eliminato: **il vetro non c'entra niente
-con un oggetto stampato**. I pannelli sono **fogli di carta appoggiati** — carta
-piena, spigoli vivi, contorno a una linea, e un'ombra che è un offset secco di
-due strati, non una sfumatura. Il solo raggio ammesso vale uno strato.
-
-### Il colore del pezzo in scena
-
-La scena ha un fondo **chiaro**: un pezzo in "bianco gesso" su uno strato di
-gesso non si vede. Ogni prodotto dichiara il proprio colore di presentazione in
-`modello.colore`, scelto in contrasto con lo strato su cui compare. Non è un
-dettaglio estetico, è un requisito di leggibilità — ed è stato il primo difetto
-trovato al primo render della v3.
+`.content-grid`: margini fluidi, colonna di testo a 62ch, e una fascia destra
+riservata alla scheda di vetro da 640 px in su. Dichiarata una volta, non
+compensata a mano in ogni sezione.
 
 ---
 
-## 5. Tipografia
+## 5. Il vetro
+
+Non il glassmorphism piatto (un velo bianco piu un blur): quello legge come
+carta velina. Il vetro qui ha **spessore**, e lo spessore si vede in tre cose,
+tutte necessarie:
+
+1. **il bordo speculare** — non un contorno uniforme: un gradiente che gira
+   sull'anello di 1 px, brillante in alto a sinistra e in basso a destra, quasi
+   invisibile sugli altri due lati (`mask-composite: exclude`);
+2. **il riflesso interno** in alto, largo e morbido, che suggerisce una
+   superficie leggermente convessa;
+3. **l'ombra ambientale** sotto, staccata su tre raggi, che solleva la lastra
+   dal fondo.
+
+Piu `backdrop-filter: blur() saturate() brightness()`: la saturazione e la
+parte che si dimentica, ed e quella che fa **bere il colore** al vetro. Un
+pezzo rosso che passa dietro una scheda la tinge di rosa.
+
+### Due spessori, e il secondo non e negoziabile
+
+`.vetro` (barre, controlli, indicatori) e sottile: 20% di bianco, blur 20 px.
+`.vetro-scheda` (tutto cio che contiene testo da leggere) e spesso: 52% di
+bianco, blur 28 px. **La leggibilita vince sull'effetto**: sopra una scena che
+cambia in continuo, un vetro sottile non garantisce contrasto.
+
+### ⚠️ Una nota onesta sulla rifrazione
+
+Il vero effetto Apple **sposta i pixel** dietro il bordo, come una lente. Oggi
+si ottiene solo con `backdrop-filter: url(#filtro)` e una displacement map SVG,
+che funziona in Chrome e non in Safari ne in Firefox — cioe non funziona
+proprio dove l'utente se lo aspetta. Quindi non c'e: bordo speculare, riflesso
+e saturazione del fondo fanno la quasi totalita della resa, in tutti i browser.
+Quando `backdrop-filter: url()` sara supportato si aggiunge dietro un
+`@supports`, senza toccare nient'altro.
+
+### ⚠️ E un difetto che ho trovato solo misurando il CSS compilato
+
+Nel sorgente il vetro era perfetto. Nel CSS compilato **la sfocatura non
+c'era**: il minificatore (Lightning CSS, dentro la pipeline di Next) aveva
+tenuto solo `-webkit-backdrop-filter`, perche nel sorgente la riga con il
+prefisso stava **dopo** quella standard. E Chrome non supporta la versione
+prefissata (`CSS.supports('-webkit-backdrop-filter','blur(1px)')` restituisce
+`false`): l'effetto centrale di questa versione era spento nel browser della
+maggior parte delle persone, e le schede erano veli bianchi con i pezzi nitidi
+che si vedevano attraverso il testo.
+
+Il prefisso va **prima**, lo standard **dopo**. La regola e scritta a commento
+sopra la dichiarazione, perche e il tipo di errore che si rimette da solo alla
+prima riformattazione.
+
+---
+
+## 6. Tipografia
 
 Tre famiglie, tre lavori distinti. Nessuna decorativa.
 
-| Ruolo | Famiglia | Perché |
+| Ruolo | Famiglia | Perche |
 |---|---|---|
-| **Display** | `Syne` 400–800 | Proporzioni volutamente anomale: la `O` è quasi un cerchio perfetto, la `A` ha il vertice tagliato, gli spessori cambiano dove non te lo aspetti. Non si confonde con nulla, ed è ciò che serve a un marchio riconoscibile da una parola sola. |
-| **Corpo · UI** | `Inter` | Leggibilità a corpo piccolo, metriche ampie. |
-| **Misure** | `JetBrains Mono` | **Nuova in v3, e necessaria.** Profondità, quote, spessori, numero di strati e tempi sono *misure*, e le misure si incolonnano. Senza un monospaziato tabellare le colonne ballano. |
+| **Display** | `Syne` 400-800 | Proporzioni volutamente anomale: la `O` e quasi un cerchio perfetto, la `A` ha il vertice tagliato, gli spessori cambiano dove non te lo aspetti. Non si confonde con nulla, ed e cio che serve a un marchio riconoscibile da una parola sola. |
+| **Corpo · UI** | `Inter` | Leggibilita a corpo piccolo, metriche ampie. |
+| **Misure** | `JetBrains Mono` | Quote, spessori, numero di strati e tempi sono *misure*, e le misure si incolonnano. Senza un monospaziato tabellare le colonne ballano. |
 
-`Instrument Serif` è stata **rimossa**: il corsivo editoriale era la firma della
-direzione precedente e in stratigrafia era un prestito.
+Caricate con `next/font` (self-hosted, nessuna richiesta a Google in runtime) e
+`display: swap`, perche l'`<h1>` e l'elemento dell'LCP.
 
-### L'enfasi è cavata a strati
+### L'enfasi e cavata a strati
 
 Le parole che portano il significato non sono in corsivo di un'altra famiglia:
 sono **cavate a strati**, con righe orizzontali da uno strato ritagliate nel
@@ -224,155 +285,240 @@ stessa cosa nello stesso modo. Una sola enfasi per titolo.
 ### Il logotipo
 
 Syne ExtraBold con le **linee di stampa dentro le lettere** — non disegnate
-sopra la parola, ritagliate nella parola: esistono solo dove c'è inchiostro. Al
+sopra la parola, ritagliate nella parola: esistono solo dove c'e inchiostro. Al
 passaggio del mouse una linea ambra lo attraversa dal basso verso l'alto, come
-la testina che depone uno strato. Una volta, non in loop: è un gesto.
+la testina che depone uno strato. Una volta, non in loop: e un gesto.
 
-Dove `background-clip: text` non è supportato la parola resta piena. Un logotipo
-invisibile sarebbe un difetto molto peggiore di uno senza le sue righe.
-
----
-
-## 6. Motion — il deposito
-
-**Niente entra in dissolvenza.** Una dissolvenza è la firma di un sito
-qualunque; qui tutto si **deposita**: una maschera scopre il contenuto dal basso
-verso l'alto e il bordo è **netto**, non sfumato — un bordo sfumato darebbe una
-dissolvenza mascherata, che è esattamente ciò che non vogliamo.
-
-Le cinque regole, in ordine di priorità:
-
-1. **Continuità.** Un solo `<Canvas>` sopra il router, mai smontato: passare di
-   pagina è un movimento, non un rimontaggio.
-2. **Il movimento obbedisce al dito.** Vedi §2: qui non è un principio, è
-   l'architettura. Unica eccezione: la **prima stampa**, automatica
-   all'apertura (~2,1 s), che esiste per *insegnare la regola*. Si vede una
-   volta per sessione, qualsiasi gesto la conclude, e se a 1,2 s la scena non è
-   pronta si salta al pezzo finito.
-3. **Un pezzo in stampa non fluttua.** È vincolato al piatto, e comincia a
-   sollevarsi e a ruotare solo quando è finito. È la differenza fra un oggetto
-   in lavorazione e un oggetto finito, e si legge senza spiegazioni.
-4. **Un protagonista per volta.** La scena si passa il testimone con calma, il
-   **testo si alterna in fretta**: due schede in dissolvenza incrociata non si
-   leggono né l'una né l'altra.
-5. **Il motion è un livello, non una struttura.** Con `prefers-reduced-motion`
-   il sito perde il movimento e non perde nulla di funzionale.
-
-### Inerzia
-
-Lenis `lerp 0.09`, nessun rimbalzo. Parallasse del puntatore **smorzato**: ±3° e
-±20 px, `lerp 0.05`. Il 3D che insegue il cursore 1:1 sembra un giocattolo.
-
-### Il ritmo
-
-~100svh di hero + ~120svh per pezzo. **Più lento della v2 di proposito:** qui lo
-scroll non scorre, deposita, e una stampa troppo rapida non si legge come una
-stampa.
-
-### La composizione cambia con il formato, non si adatta
-
-In orizzontale la scheda occupa la destra e il pezzo sta a sinistra; la linea
-trasla in continuo, come una catena che passa. In verticale la scheda occupa la
-metà bassa, il pezzo resta centrato in alto, la camera arretra a 7,3 unità — e
-**la linea sosta**: il pezzo resta fermo per tutta la finestra in cui la sua
-scheda è leggibile, e il passaggio avviene nel varco fra due schede.
-
-Il motivo è geometrico: in verticale la mezza larghezza inquadrata vale 1,16
-unità contro 2,5 dell'orizzontale, quindi lo stesso spostamento porta il pezzo
-fuori campo in metà tempo. Con una traslazione lineare la scheda di un pezzo era
-ancora a schermo mentre il pezzo era già tagliato dal bordo. Sono **due
-inquadrature diverse**, come fra orizzontale e verticale in fotografia.
+Dove `background-clip: text` non e supportato la parola resta piena. Un
+logotipo invisibile sarebbe un difetto molto peggiore di uno senza le sue
+righe.
 
 ---
 
-## 7. Come si vede che è stampato
+## 7. Motion — il fiume
+
+### Lo scorrimento
+
+Un solo `ScrollTrigger` sull'intera corsa della home (`top top` → `bottom
+bottom`), ~110 svh di corsa per pezzo. Lenis per l'inerzia. Nessuna sosta, e
+quindi nessun pinning che vada gestito: il progresso e continuo e si traduce in
+`s` senza discontinuita.
+
+### La rotazione: **oscillazione, non giro**
+
+Ogni pezzo oscilla di ±27° intorno al suo angolo di presentazione, con
+l'ampiezza che si stringe quando arriva a fuoco: da lontano si muove di piu, a
+fuoco si mostra.
+
+E una correzione, non una scelta estetica. Prima i pezzi compivano un giro
+completo, e un pezzo asimmetrico che gira mostra il suo **dietro** per metà del
+tempo: il dietro di una lampada a borchie e un rettangolo liscio, e in
+screenshot la lampada era un rettangolo arancione. Ora ogni forma dichiara
+l'angolo da cui si legge (`INQUADRATURA`): il blocco a tre quarti, perche e
+l'unico angolo da cui le borchie si vedono come borchie.
+
+### La dissolvenza d'entrata e **asimmetrica**
+
+A sinistra del punto di posa c'e spazio aperto: un pezzo che esce resta
+visibile a lungo e si dissolve piano. E la profondita del fiume.
+
+A destra c'e la scheda. Il pezzo che arriva passa **dietro** la lastra — e
+inevitabile, le schede stanno a destra e i pezzi arrivano da destra — e dietro
+il vetro un pezzo colorato e un bellissimo alone. Il problema e il pezzo che
+**sporge** dal bordo della lastra: quello legge come un rettangolo colorato
+incollato all'interfaccia. Quindi in arrivo il pezzo e solo un alone, e diventa
+solido quando ne e uscito.
+
+Con un'eccezione, e sta nel codice come parametro `velo`: **all'apertura la
+scheda non c'e**. Il primo pezzo sta a destra del titolo e li deve essere
+pieno, perche e la prima cosa che si vede del sito.
+
+### La prima stampa
+
+Una volta per sessione, all'apertura, il primo pezzo **si costruisce a strati**:
+un piano di taglio sale, un anello color ugello segna la quota di deposizione,
+e il pezzo non ruota mentre si stampa. Dura poco piu di due secondi, la salta
+qualunque scroll, e non si ripete (`sessionStorage`). E l'unico momento in cui
+il sito spiega cosa fa invece di dirlo.
+
+### Il puntatore
+
+La camera resta ferma; il puntatore inclina di pochissimo i pezzi a fuoco e
+sposta la key light. Su touch lo fa il giroscopio, se c'e il permesso. Serve a
+una cosa sola: far leggere gli oggetti come **manipolabili**.
+
+---
+
+## 8. I due pezzi d'esempio, e le loro avvertenze
+
+Le due immagini che mi hai mandato sono diventate i primi due prodotti del
+catalogo. Entrambe portano un problema legale che **non ho deciso io di
+ignorare**: sta scritto in testa a `data/products.ts` e va risolto prima di
+vendere.
+
+**Il busto del David.** L'opera e in pubblico dominio come *opera*, ma il
+Codice dei beni culturali (artt. 107-108) sottopone lo **sfruttamento
+commerciale della riproduzione** dei beni in consegna a un museo statale
+all'autorizzazione della Galleria dell'Accademia, che la concede e la tariffa.
+Il nostro modello e una **reinterpretazione stilizzata**, non una scansione — e
+un'attenuante, non una risposta. **Da far verificare a un legale prima della
+vendita.**
+
+**La lampada a blocco.** La forma del mattoncino a incastro con le borchie e un
+**marchio di forma registrato** e difeso attivamente. Il pezzo si chiama
+**"Blocco"**, ha proporzioni e numero di borchie propri, e il nome del marchio
+non compare in nessun testo, titolo, tag o annuncio. La somiglianza di famiglia
+resta un rischio: e una decisione commerciale, da prendere con gli occhi
+aperti.
+
+I segnaposto 3D di questi due pezzi sono **nostri** e procedurali (vedi §9):
+nessun file di terzi e entrato nel progetto.
+
+---
+
+## 9. Come si vede che e stampato
 
 Tre dettagli, e senza di essi il concetto resta scritto e non visibile.
 
 **Le linee sull'oggetto.** Una mappa di rilievo con una riga per strato, e la
-luce radente che le accende. Il profilo di un singolo strato non è una riga: è un
-**cordone** — chiaro al centro dove il filamento è più spesso, scuro al bordo
-dove due passate si incontrano. Le creste sono anche più lucide delle valli,
-perché la punta del cordone è stata schiacciata dall'ugello. Disegnata su canvas,
-zero byte di rete.
+luce radente che le accende. Il profilo di un singolo strato non e una riga: e
+un **cordone** — chiaro al centro dove il filamento e piu spesso, scuro al
+bordo dove due passate si incontrano. Le creste sono anche piu lucide delle
+valli, perche la punta del cordone e stata schiacciata dall'ugello. Disegnata
+su canvas, zero byte di rete.
 
-**L'ombra di contatto.** Su fondo chiaro è **l'elemento più importante della
-scena**: è ciò che appoggia il pezzo su un piano. Senza, un oggetto su fondo
-chiaro è un ritaglio incollato.
+**L'ombra di contatto.** Su fondo chiaro e **l'elemento piu importante della
+scena**: e cio che appoggia il pezzo su un piano. Senza, un oggetto su fondo
+chiaro e un ritaglio incollato.
 
-**La mappa d'ambiente.** Costruita in scena con dei `Lightformer`, non scaricata:
-una HDRI pronta costa 2-4 MB e una connessione a un dominio terzo sul percorso
-critico. Una superficie satinata non ha alcun aspetto proprio — è fatta di quello
-che riflette — e senza mappa d'ambiente sembra gesso.
+**La mappa d'ambiente.** Costruita in scena con dei `Lightformer`, non
+scaricata: una HDRI pronta costa 2-4 MB e una connessione a un dominio terzo
+sul percorso critico. Una superficie satinata non ha alcun aspetto proprio — e
+fatta di quello che riflette — e senza mappa d'ambiente sembra gesso.
+
+**E la luce ambientale va tenuta bassa.** Su un fondo chiarissimo viene
+naturale alzarla: e l'errore. A 1,35 i pezzi erano macchie di colore piatte,
+senza un lato in ombra. Il contrasto su fondo chiaro viene dall'**ombra**, non
+dalla luce.
+
+### I segnaposto procedurali
+
+I GLB reali non esistono ancora, quindi le forme sono generate in codice,
+deterministiche (stesso seme, stessa forma) e in cache. Restano poi come rete
+di sicurezza: se un modello manca, il sito non mostra mai un buco.
+
+Il busto ha richiesto quattro tentativi, e il diario e nel codice perche e
+istruttivo: una figura di rivoluzione ha la silhouette di una campana da
+qualsiasi angolo (una **pedina**); un'estrusione della sagoma frontale ha due
+facce piatte e un cordone di smusso (un **flacone**); la stessa con i fianchi
+verticali e un **cassone**. Funziona solo una **superficie parametrica** in cui
+il raggio dipende sia dall'altezza sia dall'angolo — 0,30h di mezza larghezza
+alle spalle contro 0,135h di mezza profondita al petto — con la sezione a
+superellisse e la spalla che cala verso la punta. Piu un naso da tre
+millimetri, che vale piu di tutto il resto della testa: e il solo dettaglio che
+trasforma un ovale in un volto.
+
+`MODELS.md` documenta la pipeline STL/3MF → GLB per sostituirli (Meshopt,
+< 1,5 MB per modello).
 
 ---
 
-## 8. Vincoli di design (i non negoziabili, tradotti in regole)
+## 10. Vincoli di design (i non negoziabili, tradotti in regole)
 
 - **Il testo vive nel DOM**, mai dentro il canvas. Una scelta, quattro problemi
   risolti: SEO, screen reader, `Ctrl+F` e fallback senza WebGL.
-- **Il contrasto lo decide lo strato**, non il componente (§4).
-- **Focus ring rettangolare**, 4px (uno strato) nel colore dell'ugello.
+- **La leggibilita vince sull'effetto.** Se una scheda non ha contrasto
+  sufficiente sopra la scena, si ispessisce il vetro.
+- **Focus ring visibile**, 4px (uno strato) nel colore dell'ugello.
 - **Area di tocco minima 44×44 px.**
-- **Mobile first sul touch:** un dito ruota, due zoomano, il pinch non zooma
-  mai la pagina.
-- **Da 1024 px la gabbia è asimmetrica:** l'indicatore di profondità occupa la
-  fascia destra e il contenuto le lascia la corsia. Dichiarato una volta in
-  `.content-grid`, non compensato a mano in ogni sezione.
+- **Mobile first sul touch:** la scheda occupa il basso dello schermo e **non
+  ha corsa orizzontale** — un telefono non ha un pixel di gioco laterale, e
+  qualunque parallasse le tagliava il testo. Li scorre in verticale, di poco.
+- **Il fiume non e l'unica strada.** La seconda voce di tab e "Salta al
+  catalogo": la distinta sotto il fiume contiene tutti e dieci i pezzi con
+  nome, tempi e prezzo, ed e il percorso completo per tastiera e screen reader.
+  Le schede del fiume sono focalizzabili quando il loro pezzo e in scena, e
+  ricevendo il fuoco portano il fiume su di loro.
 - **Lingua italiana**, stringhe centralizzate e pronte per i18n.
 
 ---
 
-## 9. Degradazione automatica della qualità
+## 11. Degradazione automatica della qualita
 
 | | **Alto** | **Medio** | **Basso / fallback** |
 |---|---|---|---|
 | Pixel ratio | fino a 2 | 1.5 | 1 |
 | Mappa d'ambiente | 256 px | 128 px | nessuna |
 | Ombra di contatto | 1024 px | 512 px | nessuna |
-| Ombre proiettate | sì | no | no |
-| Pezzi in scena | 8 | 4 | immagini statiche |
-| Prima stampa | sì | sì | no |
+| Ombre proiettate | si | no | no |
+| Pezzi nel fiume | 6 | 6 | immagini statiche |
+| Prima stampa | si | si | no |
 | Antialiasing | MSAA | FXAA | — |
 
-Rispetto alla v2 sono sparite cinque voci (riflessi, bloom, raggi, polvere,
-nebbia): non sono state tagliate per performance, **non servono più**. Erano
-tutte al servizio di un'atmosfera notturna che non esiste più. Il risultato è
-una scena più leggera e più coerente insieme.
+Il fiume monta sei pezzi anche nel profilo alto: sono quanti sono le schede nel
+DOM, e un pezzo in scena senza la sua scheda sarebbe un oggetto di cui non si
+puo leggere niente.
 
-Se gli fps restano sotto 30 per più di 2 secondi consecutivi si **scala di un
-profilo e non si risale**: l'oscillazione è più fastidiosa del profilo basso.
+Se gli fps restano sotto 30 per piu di 2 secondi consecutivi si **scala di un
+profilo e non si risale**: l'oscillazione e piu fastidiosa del profilo basso.
+Si puo forzare un profilo con `?qualita=high|medium|low`.
 
-**Fallback totale** (no WebGL · `prefers-reduced-motion`): gli strati si
-impilano e si leggono uno dopo l'altro, già stampati. Stesso contenuto, stessa
-gerarchia, acquisto completo.
+**Fallback totale** (no WebGL · `prefers-reduced-motion`): le schede si
+impilano e si leggono una dopo l'altra, con i pezzi gia stampati. Stesso
+contenuto, stessa gerarchia, acquisto completo. Verificato: con
+`prefers-reduced-motion` il chunk 3D **non viene scaricato** (628 KB di
+JavaScript invece di 1,62 MB non compressi), e senza JavaScript tutte e sei le
+schede restano nel flusso con nomi e prezzi visibili.
 
 ---
 
-## 10. Tono di voce
+## 12. Tono di voce
 
 - Frasi brevi. Verbi all'inizio. Nessun superlativo.
-- **Le specifiche sono dati, non promesse:** `110 × 110 × 140 MM · 0,16 MM ·
-  875 STRATI · 3-5 GIORNI LAVORATIVI`. Mai "qualità eccezionale".
-- L'elenco dei prodotti è una **distinta di produzione**, non una griglia di
-  card: una riga per pezzo, incolonnata — numero, nome, tempi, prezzo. È la
-  forma che prende un elenco quando le informazioni sono misure.
+- **Le specifiche sono dati, non promesse:** `100 × 95 × 150 MM · 0,16 MM ·
+  938 STRATI · 4-6 GIORNI LAVORATIVI`. Mai "qualita eccezionale".
+- L'elenco dei prodotti e una **distinta di produzione**, non una griglia di
+  card: una riga per pezzo, incolonnata — pastiglia del colore, numero, nome,
+  tempi, prezzo.
 - Il "su richiesta" si dichiara subito come **preventivo, non acquisto**.
-- Non si dichiara la qualità: si mostra il processo. È ciò che fa il sito intero.
+- Non si dichiara la qualita: si mostra il processo. E cio che fa il sito
+  intero.
 
 ---
 
-## 11. Dati confermati e ancora da decidere
+## 13. I difetti trovati a schermo (e non ragionando)
 
-**Confermati:** brand **STRATO** · spedizione **8,99 €**, gratuita da **90,00 €**,
-solo Italia · **10 prodotti** · categorie *decor · illuminazione · scrittoio ·
-regali personalizzati* · ragione sociale e P.IVA come segnaposto.
+Questa sezione esiste perche e la piu utile: sono tutti errori che nel codice
+sembravano corretti.
+
+| Difetto | Causa | Rimedio |
+|---|---|---|
+| Il vetro non sfocava niente, in Chrome | il minificatore teneva solo `-webkit-backdrop-filter`, che Chrome non supporta | prefisso prima, standard dopo (§5) |
+| "strato dopo strato" invisibile nell'hero | `currentColor` in un `background-image` con `color: transparent` per il `background-clip: text` | colore delle righe in una custom property dedicata |
+| La scheda sbordava di 150 px a destra | un passo del fiume vale ~780 px: la scheda non puo farlo tutto | corsa ridotta a 0,36 e posa arretrata (§2) |
+| Su mobile la scheda era tagliata a meta | stessa causa, senza un pixel di gioco laterale | nessuna corsa orizzontale sotto 640 px |
+| Il busto era una pedina, poi un flacone, poi un cassone | geometria di rivoluzione, poi estrusa | superficie parametrica (§9) |
+| Il busto era una **palla rosa** | `mergeGeometries` rifiuta insiemi con attributi diversi e restituiva `null` in silenzio: si ripiegava sulla sfera di scorta | normalizzazione degli attributi, piu un `console.warn` in sviluppo |
+| La lampada a blocco era un rettangolo liscio | il giro completo ne mostrava il dietro | oscillazione intorno all'angolo di presentazione (§7) |
+| I pezzi erano macchie piatte | luce ambientale a 1,35 su fondo chiarissimo | ambiente a 0,5, il volume lo fa l'ombra (§9) |
+| La pastiglia dell'indice finiva sotto la scheda, su mobile | due elementi fissi nello stesso angolo | l'indice non compare sotto 640 px: numero e totale sono gia nella scheda |
+| Il fondo diventava rosa | tinta al 46% | 30%, e un terzo sotto il fiume (§4) |
+
+---
+
+## 14. Dati confermati e ancora da decidere
+
+**Confermati:** brand **STRATO** · spedizione **8,99 €**, gratuita da
+**90,00 €**, solo Italia · **10 prodotti** · categorie *decor · illuminazione ·
+scrittoio · regali personalizzati* · ragione sociale e P.IVA come segnaposto.
 
 **Da decidere:**
 
-1. Costo e soglia di spedizione sono confermati, ma **ragione sociale, P.IVA,
-   sede e PEC** restano segnaposto: sono obbligatori per legge prima del lancio.
-2. **Dominio e marchio "STRATO"** non sono stati verificati.
-3. Email dove ricevere i preventivi e dominio per le email transazionali.
-4. Chiavi Stripe in modalità test.
-5. Preferenza storage per gli upload: Vercel Blob (default) o Cloudflare R2.
+1. **Ragione sociale, P.IVA, sede e PEC/email**: obbligatori per legge prima
+   del lancio, oggi segnaposto dichiarati.
+2. **Dominio e marchio "STRATO"**: non verificati. Non ho strumenti per una
+   verifica affidabile e non voglio darti una certezza che non ho.
+3. **La posizione legale su David e sul blocco a borchie** (§8).
+4. Email dove ricevere i preventivi e dominio per le email transazionali.
+5. Chiavi Stripe in modalita test.
+6. Preferenza storage per gli upload: Vercel Blob (default) o Cloudflare R2.

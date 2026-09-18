@@ -44,14 +44,14 @@ Non serve alcun file `.env` per far girare il sito in Fase 1.
 Il profilo di qualità si forza dall'URL e resta memorizzato nel browser:
 
 ```
-/?qualita=high      massimo: ombre morbide, post-processing, 8 oggetti
-/?qualita=medium    ombre di contatto, 4 oggetti
+/?qualita=high      massimo: ombre proiettate morbide, ambiente 256 px
+/?qualita=medium    solo ombra di contatto, ambiente 128 px
 /?qualita=low       nessun 3D — è il fallback statico
 ```
 
 Serve a vedere i tre profili su una macchina sola. In condizioni normali il
 profilo si rileva da solo e **scala verso il basso senza mai risalire** se gli
-fps restano sotto 30 per più di due secondi (`DESIGN.md` §9).
+fps restano sotto 30 per più di due secondi (`DESIGN.md` §11).
 
 ---
 
@@ -98,24 +98,39 @@ ricompilazione degli shader a ogni navigazione.
 
 Scroll, posizione del mouse, giroscopio e progresso della camera vivono in
 `lib/frame.ts` — un semplice oggetto di modulo, **non** uno store React. Viene
-scritto dal DOM (`HomeSequence`) e letto dentro `useFrame`.
+scritto dal DOM (`Fiume`) e letto dentro `useFrame`.
 
 React fa re-render solo quando cambia qualcosa di *semantico*: quale prodotto è
 a fuoco, quale materiale è selezionato, il contenuto del carrello.
 **Se ti viene voglia di mettere il progresso dello scroll in uno `useState`,
 non farlo**: sono 60 re-render al secondo dell'intero albero.
 
-### 3. Lo strato decide, il componente ubbidisce
+### 3. Un solo numero muove il pezzo **e** la sua scheda
 
-`components/layout/Stratigrafia.tsx` traduce la posizione nel documento in
-**materiale corrente** e **profondità in millimetri**, e li scrive come variabili
-su `:root`. Da lì li legge tutto il resto: fondo, colore del testo, colore delle
-linee, indicatore.
+`s` è la posizione della fila, `d = i - s` la distanza di un pezzo dal punto di
+posa. Da `d` dipendono posizione, scala e opacità del pezzo in scena **e** la
+trasformazione della sua scheda nel DOM. La conversione fra unità di scena e
+pixel è una sola funzione (`pixelPerUnita` in `lib/fiume.ts`, che non importa
+`three`), non due copie.
 
-Nessun componente decide da sé se è su uno strato chiaro o profondo: lo sa perché
-lo strato glielo dice (`data/strati.ts`). **Se ti serve sapere il colore del
-testo, usa `var(--ink-corrente)`** — non scrivere un colore fisso, o su uno degli
-strati sarà illeggibile.
+**Se devi cambiare il passo del fiume, cambialo in `lib/fiume.ts` e in nessun
+altro posto.** Era duplicato fra la scena e il DOM, ed è il tipo di
+duplicazione che un giorno si disallinea e nessuno capisce più perché il testo
+è in ritardo sull'oggetto.
+
+Il colore del pezzo a fuoco lo scrive `components/layout/Tinta.tsx` su `:root`
+come `--tinta`: da lì il fondo lo raccoglie in un alone. **Se ti serve il
+colore del pezzo corrente, usa `var(--tinta)`** — non ricalcolarlo.
+
+### 3-bis. ⚠️ Due trappole del CSS, entrambe già scattate
+
+1. **`backdrop-filter`: il prefisso `-webkit-` va PRIMA, lo standard DOPO.**
+   Al contrario il minificatore tiene solo la versione prefissata, che Chrome
+   non supporta: il vetro resta un velo bianco senza sfocatura. Non si vede nel
+   sorgente, si vede solo nel CSS compilato.
+2. **Trasformazione e opacità delle schede stanno sulla lastra di vetro, non
+   sul contenitore.** Un antenato con `opacity < 1`, una trasformazione o un
+   `will-change` apre una nuova *backdrop root* e disattiva il blur.
 
 ### 4. Il testo vive nel DOM, mai dentro il canvas
 
@@ -146,21 +161,26 @@ fallback senza WebGL.
 | Metrica | Obiettivo | Misurato | Come |
 |---|---|---|---|
 | LCP | < 2,5 s su 4G | — | L'elemento LCP è l'`<h1>` su gradiente CSS, renderizzato lato server: si vede prima che un solo byte di JavaScript venga eseguito. Il canvas arriva dopo e non entra nella misura. |
-| JS sul percorso critico | il minimo possibile | **179 KB gzip** | Di cui **152 KB sono React 19 + Next 16**, cioè il pavimento del framework. Il codice dell'applicazione sono i restanti ~27 KB. |
-| JS differito | — | **290 KB gzip** | three + R3F + drei + GSAP + Lenis. Caricato dopo l'evento `load`, in un momento di quiete. **Con `prefers-reduced-motion` o senza WebGL non viene scaricato affatto.** In v3 la scena è più leggera: riflessi, bloom, raggi, polvere e nebbia sono stati eliminati perché non servono più. |
-| CSS | — | vedi `npm run build` | Tutto il foglio di stile del sito |
+| JS sul percorso critico | il minimo possibile | **146 KB gzip** | Tutto ciò che arriva **prima dell'evento `load`**. Di cui la gran parte è React 19 + Next 16, cioè il pavimento del framework: il codice dell'applicazione sono ~25 KB. |
+| JS differito | — | **311 KB gzip** | three + R3F + drei + GSAP + Lenis. Caricato dopo l'evento `load`, in un momento di quiete. **Con `prefers-reduced-motion` o senza WebGL non viene scaricato affatto.** Misurato: una visita normale scarica 1,62 MB di JavaScript non compresso, una con `prefers-reduced-motion` 628 KB. |
+| CSS | — | **9 KB gzip** | Tutto il foglio di stile del sito, tema compreso |
 | fps | 60 desktop · ≥ 30 mobile | — | Tre profili, declassamento automatico a una via |
 | GLB | < 1,5 MB | — | `npm run models:ottimizza` esce con errore se il budget salta |
 
 > **Nota onesta sul numero.** In `PLAN.md` avevo scritto "< 120 KB gzip" per il
-> bundle iniziale. Misurato: 179 KB. La stima era sbagliata, non il codice —
-> React 19 + Next 16 da soli ne occupano 152, e sotto quella soglia non si
-> scende restando su questo stack. I 27 KB di applicazione sono il numero su cui
+> bundle iniziale. Misurato: 146 KB, e prima degli interventi qui sotto erano
+> 287. La stima era sbagliata, non il codice — React 19 + Next 16 da soli
+> occupano la gran parte di quei 146, e sotto quella soglia non si scende
+> restando su questo stack. I ~25 KB di applicazione sono il numero su cui
 > abbiamo davvero controllo, e quello è basso.
 >
+> Tutti i numeri di questa tabella sono presi contatore alla mano su `next
+> start`, sommando il gzip di ogni risposta e separando ciò che arriva prima
+> dell'evento `load` da ciò che arriva dopo.
+>
 > Due interventi reali hanno tolto 108 KB dal percorso critico:
-> 1. la matematica dello scroll è stata spostata in `lib/sequenza.ts`, che non
->    importa `three` — prima `HomeSequence` se lo trascinava dietro (−99 KB);
+> 1. la matematica dello scroll è stata spostata in `lib/fiume.ts`, che non
+>    importa `three` — prima il componente dello scorrimento se lo trascinava dietro (−99 KB);
 > 2. GSAP e Lenis sono importati dinamicamente dentro l'effetto (−40 KB), e il
 >    chunk 3D aspetta l'evento `load` più un momento di quiete.
 

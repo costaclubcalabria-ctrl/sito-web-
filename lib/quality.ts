@@ -41,7 +41,7 @@ const PROFILI: Record<QualityTier, QualitySettings> = {
   },
   medium: {
     tier: 'medium', dpr: [1, 1.5], ombre: 'contact', vetroRifrangente: 0,
-    maxOggetti: 4, antialias: true, genesi: true, ambiente: 128,
+    maxOggetti: 6, antialias: true, genesi: true, ambiente: 128,
   },
   low: {
     tier: 'low', dpr: [1, 1], ombre: 'none', vetroRifrangente: 0,

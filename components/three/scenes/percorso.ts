@@ -1,134 +1,156 @@
 import * as THREE from 'three'
 
-// Rie-esportate per comodità di chi lavora sulla scena: l'implementazione sta
-// in lib/sequenza.ts, che non importa three (vedi la nota in quel file).
-export { centroFuoco, fuoco, opacitaPannello, stampa } from '@/lib/sequenza'
+// Rie-esportate per comodita di chi lavora sulla scena: l'implementazione sta
+// in lib/fiume.ts, che non importa three (vedi la nota in quel file).
+export { distanza, fuoco, opacitaScheda, posizioneFila, indiceAFuoco, S_INIZIO, PASSO_X } from '@/lib/fiume'
 
 /**
- * La coreografia della home, v3.
+ * La geometria del fiume.
  *
  * ============================================================================
- * LA CAMERA NON VIAGGIA. È LA LINEA CHE SCORRE.
+ * LA CAMERA NON SI MUOVE. IL FIUME SCORRE.
  * ============================================================================
  *
- * Nelle versioni precedenti la camera attraversava un paesaggio in profondità.
- * Era generico — è ciò che fa qualunque sito 3D — e soprattutto contraddiceva
- * il concetto: se la camera vola, gli oggetti sono un panorama; se la camera
- * sta ferma, gli oggetti sono **pezzi che passano davanti a te**.
+ * Camera fissa e frontale, come quella puntata su un banco di posa. I pezzi
+ * scorrono davanti in continuo su una traiettoria ad arco: arrivano da destra
+ * lontani e piccoli, passano vicini al centro, escono a sinistra.
  *
- * Qui la camera è fissa e frontale, come quella puntata su un piatto di stampa.
- * I pezzi sono allineati su una linea orizzontale e la linea trasla: uno alla
- * volta arriva al punto di posa, si stampa, e lascia il posto al successivo.
- *
- * Il movimento residuo della camera è solo la parallasse del puntatore,
- * smorzata e minima. Non c'è altro.
+ * L'arco e la cosa che rende il movimento "vivo" invece che una fila che
+ * trasla: passando dal centro il pezzo si **avvicina** e cresce, quindi il
+ * movimento ha una profondita anche se la camera e immobile.
  */
 
-/** Distanza fra un pezzo e il successivo lungo la linea. */
-const PASSO_X = 3.4
+import { PASSO_X } from '@/lib/fiume'
 
 /**
- * Dove sta il pezzo a fuoco nell'inquadratura, in unità di scena.
- * Negativo = a sinistra, perché la scheda occupa la destra. In verticale è 0:
- * lì la scheda sta in basso e il pezzo resta centrato.
+ * L'arco.
+ *
+ * I pezzi non stanno su una retta: allontanandosi dal punto di posa **arretrano
+ * e scendono**. Non e un vezzo — e cio che impedisce al pezzo che arriva di
+ * passare davanti al testo della scheda, che occupa la destra dello schermo.
+ * Con un arco piatto (i valori della prima versione) il pezzo successivo si
+ * piazzava esattamente dietro le righe delle misure.
  */
-const POSA_X = -1.15
+const ARCO_Z = 1.55
+const ARCO_Y = 0.42
 
-/** Il punto di posa nell'hero: a destra, perché la sinistra è del titolo. */
-const POSA_HERO = -0.55
+/*
+ * Quanto lontano si vede un pezzo — e **non e simmetrico**.
+ *
+ * A sinistra del punto di posa c'e spazio aperto: un pezzo che si allontana
+ * puo restare visibile a lungo, rimpicciolirsi e dissolversi. E' la profondita
+ * del fiume.
+ *
+ * A destra c'e la scheda di vetro. Il pezzo che arriva passa **dietro** la
+ * lastra — e inevitabile: le schede stanno a destra e i pezzi arrivano da
+ * destra. Dietro il vetro un pezzo colorato e un bellissimo alone; il problema
+ * e il pezzo che **sporge** dal bordo della lastra, perche quello legge come
+ * un rettangolo colorato incollato all'interfaccia. Succedeva esattamente a
+ * `d ≈ 0,77`, dove il Blocco spuntava di venti pixel oltre il bordo sinistro
+ * della scheda.
+ *
+ * Quindi in arrivo il pezzo e solo un alone dietro il vetro, e diventa solido
+ * quando ne e uscito. Un pezzo che si annuncia come luce e poi si materializza
+ * e migliore di un pezzo che spunta da un angolo.
+ *
+ * ⚠️ Con una eccezione, ed e il motivo del parametro `velo`: **all'apertura la
+ * scheda non c'e**. Il primo pezzo sta a destra del titolo, dove non copre
+ * niente e niente lo copre, e li deve essere **pieno** — e la prima cosa che
+ * si vede del sito. Applicando la dissolvenza d'entrata anche lassu, il busto
+ * compariva al 30% dietro le parole: sembrava un errore di caricamento.
+ * Quindi la dissolvenza d'entrata entra in vigore mano a mano che il fiume
+ * parte, cioe mano a mano che la scheda arriva a occupare la destra.
+ */
+export const ORIZZONTE = 1.65
+const USCITA_DISSOLVENZA = 0.95
+const ENTRATA_DISSOLVENZA = 0.34
+const ENTRATA_ORIZZONTE = 0.82
 
 export interface Composizione {
   aspetto: number
 }
 
 /**
- * Posizione del pezzo i-esimo sulla linea.
- * Le quote Y e Z variano di poco: una fila perfettamente allineata si legge
- * come una vetrina, una appena sfalsata come una linea di produzione.
- */
-export function posizioneOggetto(i: number): THREE.Vector3 {
-  const lato = i % 2 === 0 ? 1 : -1
-  return new THREE.Vector3(i * PASSO_X, 0, lato * 0.34)
-}
-
-/**
- * Posizione della linea (il gruppo che contiene tutti i pezzi) al progresso `t`.
+ * Dove sta il punto di posa, in unita di scena.
  *
- * `indice` è la posizione continua lungo la linea: 0 = primo pezzo al punto di
- * posa, 1 = secondo, e così via. Prima del primo fuoco resta bloccato a
- * `POSA_HERO`, così nell'hero il pezzo sta a destra del titolo e non ci finisce
- * dietro.
+ * In orizzontale e spostato a sinistra: la scheda di vetro occupa la destra.
+ * In verticale e centrato, perche la scheda sta sotto.
  */
-export function posizioneLinea(t: number, comp: Composizione, out: THREE.Vector3): void {
-  const verticale = comp.aspetto < 1
-  const posa = verticale ? 0 : POSA_X * Math.min(1, (comp.aspetto - 0.75) / 0.6)
-
-  // Nell'hero il pezzo resta poco a destra del titolo in orizzontale; in
-  // verticale il titolo sta sotto, quindi il pezzo e' gia centrato.
-  const inizio = verticale ? -0.001 : POSA_HERO
-  const grezzo = Math.max(inizio, (t - 0.3) / 0.2)
-
-  /*
-   * La linea non trasla in continuo: **sosta**.
-   *
-   * L'idea della catena che passa senza fermarsi era piu elegante sulla carta,
-   * e sbagliata alla prova: la finestra in cui la scheda di un pezzo e
-   * leggibile e piu larga di quella in cui il pezzo resta inquadrato, quindi
-   * il testo parlava di un oggetto che era gia mezzo tagliato dal bordo. Testo
-   * e oggetto raccontavano due cose diverse — il difetto peggiore in una scena
-   * guidata dallo scroll, e proprio quello che la regola "leggono lo stesso
-   * numero" doveva impedire.
-   *
-   * Quindi il pezzo resta fermo al punto di posa per tutta la durata della sua
-   * scheda, e il passaggio al successivo avviene in fretta, nel varco fra le
-   * due schede. In verticale la sosta e' piu lunga, perche la mezza larghezza
-   * inquadrata vale 1,16 unita contro le 2,3 dell'orizzontale: la stessa
-   * traslazione porta il pezzo fuori campo in meta tempo.
-   */
-  const indice = conSosta(grezzo, verticale ? 0.4 : 0.36)
-
-  out.set(-indice * PASSO_X + posa, 0, 0)
+export function posa(comp: Composizione): number {
+  if (comp.aspetto < 1) return 0
+  return -1.05 * Math.min(1, (comp.aspetto - 0.75) / 0.6)
 }
 
 /**
- * Applica la sosta: piatta entro `sosta` dal punto di posa, poi il passaggio.
- * @param sosta semiampiezza della sosta, in frazioni di passo (0 = nessuna).
+ * Posizione del pezzo a distanza `d` dal punto di posa.
+ * Scrive nel vettore passato: gira 60 volte al secondo per ogni pezzo, e un
+ * `new Vector3()` per frame e spazzatura che il garbage collector fa poi
+ * pagare con uno scatto visibile.
  */
-function conSosta(grezzo: number, sosta: number): number {
-  const i = Math.round(grezzo)
-  const d = grezzo - i
+export function posizionePezzo(d: number, comp: Composizione, out: THREE.Vector3): void {
   const a = Math.abs(d)
-  if (a <= sosta) return i
-  const verso = d < 0 ? -1 : 1
-  return i + verso * ((a - sosta) / (0.5 - sosta)) * 0.5
+  out.set(posa(comp) + d * PASSO_X, -a * ARCO_Y, -a * ARCO_Z)
+}
+
+/** Scala del pezzo: pieno al punto di posa, piu piccolo mentre si allontana. */
+export function scalaPezzo(d: number): number {
+  const a = Math.abs(d)
+  return Math.max(0.5, 1 - a * 0.3)
+}
+
+/** Fin dove si vede un pezzo, dalla parte da cui arriva. */
+function orizzonte(d: number, velo: number): number {
+  if (d <= 0) return ORIZZONTE
+  return ORIZZONTE + (ENTRATA_ORIZZONTE - ORIZZONTE) * velo
+}
+
+/**
+ * Opacita del pezzo: si dissolve prima di uscire, non sparisce di scatto.
+ *
+ * `velo` e quanto la scheda di vetro occupa la destra dello schermo: 0 al
+ * titolo, 1 a fiume avviato. Vedi la nota sull'asimmetria qui sopra.
+ */
+export function opacitaPezzo(d: number, velo = 1): number {
+  const a = Math.abs(d)
+  const fuori = orizzonte(d, velo)
+  const dentro =
+    d > 0 ? USCITA_DISSOLVENZA + (ENTRATA_DISSOLVENZA - USCITA_DISSOLVENZA) * velo : USCITA_DISSOLVENZA
+  if (a <= dentro) return 1
+  if (a >= fuori) return 0
+  const v = 1 - (a - dentro) / (fuori - dentro)
+  return v * v * (3 - 2 * v)
+}
+
+/**
+ * Se il pezzo va disegnato. Segue la stessa asimmetria dell'opacita: oltre il
+ * suo orizzonte non e solo trasparente, non esiste — e un pezzo che resta
+ * visibile in fondo alla fila trasforma il fiume in una lista, e la lista non
+ * ha profondita.
+ */
+export function pezzoVisibile(d: number, velo = 1): boolean {
+  return Math.abs(d) < orizzonte(d, velo)
 }
 
 /** La camera. Fissa: cambia solo con il formato dello schermo. */
 export function camera(comp: Composizione, posOut: THREE.Vector3, miraOut: THREE.Vector3): void {
-  const verticale = comp.aspetto < 1
-
-  if (verticale) {
+  if (comp.aspetto < 1) {
     /*
      * In verticale il campo orizzontale si stringe moltissimo: con `fov 38°` e
      * un rapporto 0,46 la mezza larghezza inquadrata vale solo `0.16 · d`. Con
-     * la distanza del formato orizzontale il pezzo sborderebbe dallo schermo.
+     * la distanza del formato orizzontale il pezzo sborderebbe.
      *
-     * Quindi la camera arretra a 7,3 (il pezzo occupa circa un quarto
-     * dell'altezza) e il punto di mira scende sotto il piano: e' cosi che
-     * l'oggetto sale nel terzo superiore, sopra la scheda che occupa la meta
-     * bassa. Non e' un adattamento: e' un'inquadratura diversa, come si fa in
-     * fotografia fra orizzontale e verticale.
+     * Quindi la camera arretra e il punto di mira scende sotto il piano: e cosi
+     * che l'oggetto sale nel terzo superiore, sopra la scheda che occupa la
+     * meta bassa. Non e un adattamento, e un'inquadratura diversa — come fra
+     * orizzontale e verticale in fotografia.
      */
-    posOut.set(0, 1.4, 7.3)
-    miraOut.set(0, -0.6, 0)
+    posOut.set(0, 1.35, 7.1)
+    miraOut.set(0, -0.52, 0)
     return
   }
 
-  // Frontale, appena sopra la quota del pezzo: è l'inquadratura di una foto di
-  // prodotto, non di un paesaggio.
-  posOut.set(0, 0.74, 4.25)
-  miraOut.set(0, 0.5, 0)
+  posOut.set(0, 0.76, 4.35)
+  miraOut.set(0, 0.52, 0)
 }
 
-/** Altezza del piano d'appoggio: la quota 0 della stampa. */
-export const QUOTA_PIATTO = 0
+

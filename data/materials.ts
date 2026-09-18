@@ -24,6 +24,24 @@ export const MATERIALS: readonly Material[] = [
     ],
   },
   {
+    id: 'pla-tinta',
+    nome: 'PLA tinta piena',
+    descrizione:
+      'Colore saturo, coprente, senza sfumature. È la finitura che rende un oggetto un oggetto di design invece di un pezzo tecnico: il colore non decora la forma, la definisce.',
+    sovrapprezzoCent: 200,
+    colori: [
+      { id: 'blu-cobalto', nome: 'Blu cobalto', hex: '#3E6EA8', ruvidita: 0.78, metallicita: 0 },
+      { id: 'rosso-segnale', nome: 'Rosso segnale', hex: '#D8341F', ruvidita: 0.78, metallicita: 0 },
+      { id: 'giallo-zolfo', nome: 'Giallo zolfo', hex: '#E8B226', ruvidita: 0.78, metallicita: 0 },
+      { id: 'rosa-cipria', nome: 'Rosa cipria', hex: '#E29BA6', ruvidita: 0.8, metallicita: 0 },
+      { id: 'verde-acido', nome: 'Verde acido', hex: '#8FBF3F', ruvidita: 0.78, metallicita: 0 },
+      { id: 'arancio-bruciato', nome: 'Arancio bruciato', hex: '#E0682A', ruvidita: 0.78, metallicita: 0 },
+      { id: 'grigio-cemento', nome: 'Grigio cemento', hex: '#9A9A9E', ruvidita: 0.85, metallicita: 0 },
+      { id: 'bianco-latte', nome: 'Bianco latte', hex: '#F0EDE8', ruvidita: 0.85, metallicita: 0 },
+      { id: 'nero-antracite', nome: 'Nero antracite', hex: '#23242A', ruvidita: 0.8, metallicita: 0 },
+    ],
+  },
+  {
     id: 'pla-seta',
     nome: 'PLA seta',
     descrizione: 'Finitura satinata che riflette la luce lungo gli strati. Il processo diventa visibile.',

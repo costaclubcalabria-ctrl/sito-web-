@@ -9,19 +9,18 @@ import type { QualitySettings } from '@/lib/quality'
 import { frame, damp, clamp01 } from '@/lib/frame'
 import { useScene } from '@/store/useScene'
 import { ProductObject } from '../objects/ProductObject'
-import { camera as chiaveCamera, posizioneLinea, posizioneOggetto, type Composizione } from './percorso'
-import { stampa } from '@/lib/sequenza'
+import { camera as chiaveCamera, type Composizione } from './percorso'
+import { distanza } from '@/lib/fiume'
 
 /**
- * La scena della home: una linea di pezzi che passa davanti a una camera fissa,
- * e ognuno si stampa quando arriva al punto di posa.
+ * La scena della home: il fiume di pezzi che scorre davanti a una camera fissa.
  *
- * La camera non viaggia (vedi `percorso.ts`): è la linea che trasla. L'unico
- * stato React qui dentro è la prima stampa, che avviene una volta per sessione.
+ * La camera non viaggia (vedi `percorso.ts`): scorre la fila. L'unico stato
+ * React qui dentro è la prima stampa, che avviene una volta per sessione.
  */
 
 /** Durata della prima stampa, quella automatica all'apertura. */
-const PRIMA_STAMPA_S = 2.1
+const PRIMA_STAMPA_S = 2.2
 /** Se a questo istante la scena non è pronta si salta al pezzo finito. */
 const TIMEOUT_S = 1.2
 
@@ -31,39 +30,36 @@ export function HomeScene({ prodotti, settings }: { prodotti: readonly Product[]
   const genesiVista = useScene((s) => s.genesiVista)
   const segnaGenesiVista = useScene((s) => s.segnaGenesiVista)
 
-  const linea = useRef<THREE.Group>(null)
-
   // Riusati a ogni frame: allocare vettori a 60 fps produce spazzatura che il
   // garbage collector fa poi pagare con uno scatto visibile.
-  const posLinea = useRef(new THREE.Vector3())
-  const posCam = useRef(new THREE.Vector3(0, 0.72, 4.75))
-  const miraCam = useRef(new THREE.Vector3(0, 0.5, 0))
-  const mira = useRef(new THREE.Vector3(0, 0.5, 0))
+  const posCam = useRef(new THREE.Vector3(0, 0.76, 4.35))
+  const miraCam = useRef(new THREE.Vector3(0, 0.52, 0))
+  const mira = useRef(new THREE.Vector3(0, 0.52, 0))
 
   const comp = useRef<Composizione>({ aspetto: 1.6 })
   comp.current.aspetto = dimensioni.height > 0 ? dimensioni.width / dimensioni.height : 1.6
 
-  const posizioni = useMemo(() => prodotti.map((_, i) => posizioneOggetto(i)), [prodotti])
-
   /**
    * La prima stampa.
    *
-   * Il primo pezzo non aspetta lo scroll: si stampa da sé all'apertura, in
-   * poco più di due secondi. È l'unica animazione autonoma del sito, e c'è per
-   * una ragione precisa — insegna la regola. Dopo averla vista una volta,
-   * l'utente capisce che scorrendo ne stampa altri.
+   * Il primo pezzo non arriva finito: si **stampa da sé** all'apertura, in poco
+   * più di due secondi. È l'unica animazione autonoma del sito, e resta anche
+   * ora che lo scorrimento è continuo — perché è il momento in cui il sito dice
+   * che cosa siamo, e dura il tempo di un colpo d'occhio.
    *
    * Si vede **una volta per sessione**: alla seconda visita è una tassa.
-   * Qualsiasi gesto la conclude. Se a `TIMEOUT_S` la scena non è ancora
-   * pronta, si salta al pezzo finito: nessuno resta davanti a un piatto vuoto.
+   * Qualsiasi gesto la conclude. Se a `TIMEOUT_S` la scena non è ancora pronta
+   * si salta al pezzo finito: nessuno resta davanti a un piatto vuoto.
    */
   const avvio = useRef<number | null>(null)
   const prima = useRef(genesiVista ? 1 : 0)
   const conclusa = useRef(genesiVista)
   const saltata = useRef(false)
 
+  const distanze = useMemo(() => prodotti.map(() => ({ d: 0 })), [prodotti])
+
   useFrame((state, dt) => {
-    const t = frame.scroll
+    const s = frame.fiume
     const tempo = state.clock.elapsedTime
 
     // --- La prima stampa ---------------------------------------------------
@@ -71,8 +67,8 @@ export function HomeScene({ prodotti, settings }: { prodotti: readonly Product[]
       if (avvio.current === null) avvio.current = tempo
       const trascorso = tempo - avvio.current
 
-      // Qualsiasi scroll conclude la prima stampa: il dito ha la precedenza.
-      if (!saltata.current && (t > 0.004 || trascorso > TIMEOUT_S + PRIMA_STAMPA_S)) {
+      // Qualsiasi scorrimento la conclude: il dito ha la precedenza.
+      if (!saltata.current && (s > -0.6 || trascorso > TIMEOUT_S + PRIMA_STAMPA_S)) {
         saltata.current = true
       }
 
@@ -95,14 +91,10 @@ export function HomeScene({ prodotti, settings }: { prodotti: readonly Product[]
       frame.genesi = 1
     }
 
-    // --- La linea ----------------------------------------------------------
-    posizioneLinea(t, comp.current, posLinea.current)
-    const g = linea.current
-    if (g) {
-      // lambda 4: la linea insegue lo scroll con un ritardo percepibile ma non
-      // molle. Più alto sembra incollata, più basso sembra trascinata.
-      g.position.x = damp(g.position.x, posLinea.current.x, 4, dt)
-      g.position.y = damp(g.position.y, posLinea.current.y, 4, dt)
+    // --- Le distanze, calcolate una volta per frame ------------------------
+    for (let i = 0; i < distanze.length; i++) {
+      const slot = distanze[i]
+      if (slot) slot.d = distanza(i, s)
     }
 
     // --- La camera: ferma, con la sola parallasse del puntatore ------------
@@ -110,8 +102,8 @@ export function HomeScene({ prodotti, settings }: { prodotti: readonly Product[]
 
     const px = frame.pointerX + frame.tiltX
     const py = frame.pointerY + frame.tiltY
-    posCam.current.x += px * 0.2
-    posCam.current.y += -py * 0.12
+    posCam.current.x += px * 0.18
+    posCam.current.y += -py * 0.11
 
     camera.position.x = damp(camera.position.x, posCam.current.x, 3, dt)
     camera.position.y = damp(camera.position.y, posCam.current.y, 3, dt)
@@ -125,20 +117,19 @@ export function HomeScene({ prodotti, settings }: { prodotti: readonly Product[]
 
   return (
     <>
-      <group ref={linea}>
-        {prodotti.map((p, i) => (
-          <ProductObject
-            key={p.slug}
-            prodotto={p}
-            posizione={posizioni[i] ?? new THREE.Vector3()}
-            fuoco={() => fuocoLocale(i, frame.scroll)}
-            // Il primo pezzo si stampa da sé all'apertura; gli altri li stampa
-            // lo scroll. È la stessa funzione, con una sorgente diversa.
-            stampa={i === 0 ? () => frame.genesi : () => stampa(i, frame.scroll)}
-            settings={settings}
-          />
-        ))}
-      </group>
+      {prodotti.map((p, i) => (
+        <ProductObject
+          key={p.slug}
+          prodotto={p}
+          // Una funzione e non un valore: il componente legge la distanza
+          // dentro il proprio `useFrame`, senza passare da React.
+          distanza={() => distanze[i]?.d ?? 0}
+          // Solo il primo pezzo si stampa: e lo fa una volta, all'apertura.
+          stampa={i === 0 ? () => frame.genesi : null}
+          comp={comp.current}
+          settings={settings}
+        />
+      ))}
 
       {/*
         L'ombra di contatto.
@@ -147,32 +138,21 @@ export function HomeScene({ prodotti, settings }: { prodotti: readonly Product[]
         appoggia il pezzo su un piano invece di lasciarlo galleggiare in un
         vuoto bianco. Senza, un oggetto su fondo chiaro è un ritaglio.
 
-        `ContactShadows` renderizza la scena dall'alto in una texture e la sfoca:
-        costa una passata, non un secondo render completo come uno specchio.
+        `ContactShadows` renderizza la scena dall'alto in una texture e la
+        sfoca: costa una passata, non un secondo render completo.
       */}
       {settings.ombre !== 'none' && (
         <ContactShadows
           position={[0, -0.002, 0]}
-          scale={26}
+          scale={30}
           resolution={settings.ombre === 'soft' ? 1024 : 512}
-          blur={2}
-          far={2.4}
-          opacity={0.58}
-          color="#2a2118"
+          blur={2.1}
+          far={2.6}
+          opacity={0.5}
+          color="#1d1d24"
           frames={Infinity}
         />
       )}
     </>
   )
-}
-
-/**
- * Il fuoco, calcolato qui invece di importarlo: `HomeScene` gira nel chunk 3D e
- * questa è l'unica funzione che gli serve oltre a `stampa`.
- */
-function fuocoLocale(i: number, t: number): number {
-  const centro = 0.3 + i * 0.2
-  const d = Math.abs(t - centro) / 0.17
-  if (d >= 1) return 0
-  return 0.5 + 0.5 * Math.cos(Math.PI * d)
 }

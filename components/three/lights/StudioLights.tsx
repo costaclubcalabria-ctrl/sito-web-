@@ -36,14 +36,20 @@ export function StudioLights({ settings }: { settings: QualitySettings }) {
 
   return (
     <>
-      {/* L'ambiente della stanza. Alto: è un fondo chiaro, la luce rimbalza. */}
-      <ambientLight intensity={1.35} color="#fff6e8" />
+      {/*
+        L'ambiente della stanza. **Basso**, e va spiegato perché è controintuitivo:
+        su un fondo chiarissimo viene naturale alzarlo, e a 1,35 i pezzi
+        diventavano macchie di colore piatte — nessun lato in ombra, nessun
+        volume. Il fondo chiaro rimbalza già luce attraverso l'environment map:
+        qui serve solo a non chiudere i neri.
+      */}
+      <ambientLight intensity={0.5} color="#fff6e8" />
 
       {/* Key — il volume e l'ombra */}
       <directionalLight
         ref={key}
         position={[2.6, 4.4, 3.2]}
-        intensity={2.4}
+        intensity={2.7}
         color="#fffaf0"
         castShadow={settings.ombre === 'soft'}
         shadow-mapSize={[2048, 2048]}
@@ -58,11 +64,11 @@ export function StudioLights({ settings }: { settings: QualitySettings }) {
       />
 
       {/* Fill — apre le ombre senza appiattire */}
-      <directionalLight position={[-3.4, 2.2, 2.4]} intensity={0.75} color="#eef2ff" />
+      <directionalLight position={[-3.4, 2.2, 2.4]} intensity={0.5} color="#eef2ff" />
 
       {/* Radente dal basso — accende gli spigoli degli strati.
           È la luce che rende visibile il processo, quindi non è decorativa. */}
-      <directionalLight position={[-0.8, 0.12, 3.6]} intensity={0.95} color="#ffd9a8" />
+      <directionalLight position={[-0.8, 0.12, 3.6]} intensity={0.8} color="#ffd9a8" />
     </>
   )
 }

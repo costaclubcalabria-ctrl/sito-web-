@@ -4,8 +4,7 @@ import './globals.css'
 
 import { Stage } from '@/components/three/Stage'
 import { SmoothScroll } from '@/components/layout/SmoothScroll'
-import { Stratigrafia } from '@/components/layout/Stratigrafia'
-import { ProfonditaRail } from '@/components/layout/ProfonditaRail'
+import { Tinta } from '@/components/layout/Tinta'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { SkipLinks } from '@/components/layout/SkipLinks'
@@ -49,8 +48,8 @@ export const metadata: Metadata = metadataBase()
 export const viewport: Viewport = {
   // Il colore della barra di sistema è quello del primo strato: la pagina
   // sembra cominciare dal bordo dello schermo.
-  themeColor: '#ede7da',
-  colorScheme: 'light dark',
+  themeColor: '#efeff1',
+  colorScheme: 'light',
   width: 'device-width',
   initialScale: 1,
   // Nessun `maximumScale`: impedire lo zoom è una barriera di accessibilità.
@@ -62,10 +61,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="relative min-h-svh antialiased">
         <SkipLinks />
 
-        {/* Il motore della stratigrafia: traduce la posizione nel documento in
-            materiale corrente e profondità in millimetri, e li scrive su
-            `:root`. Da lì li legge tutto il resto. */}
-        <Stratigrafia />
+        {/* La stanza: fondo neutro, e sopra l'alone del colore del pezzo a
+            fuoco. È CSS puro, quindi visibile a 0 ms e identico nel fallback. */}
+        <div className="stanza" aria-hidden="true" />
+        <div className="tinta" aria-hidden="true" />
+        <div className="grana" aria-hidden="true" />
+
+        {/* Prende il colore del pezzo a fuoco e lo scrive su `:root`: è così
+            che la stanza cambia luce quando cambi oggetto. */}
+        <Tinta />
 
         {/* Il canvas persistente. Vive qui, sopra il router: non viene mai
             smontato al cambio rotta (PLAN.md §3.1). */}
@@ -80,8 +84,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <Footer />
         </div>
-
-        <ProfonditaRail />
 
         <script
           type="application/ld+json"

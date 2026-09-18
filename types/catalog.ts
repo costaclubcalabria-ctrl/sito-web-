@@ -56,7 +56,7 @@ export interface Variant {
  * avere i modelli: e anche la rete di sicurezza se un GLB manca in produzione.
  */
 export interface Placeholder {
-  kind: 'lathe' | 'shell' | 'knot' | 'prism' | 'plate'
+  kind: 'lathe' | 'shell' | 'knot' | 'prism' | 'plate' | 'busto' | 'blocco'
   /** Determina la forma: stesso seed, stessa geometria, sempre. */
   seed: number
   /** Altezza indicativa in unita di scena (1 unita = 10 cm). */

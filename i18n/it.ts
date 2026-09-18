@@ -40,10 +40,11 @@ export const it = {
     ctaSecondaria: 'Fai fare il tuo',
     scorri: 'Scendi',
     saltaAnimazione: 'Salta l’animazione',
-    istruzione: 'Scorri per stampare',
+    istruzione: 'Scorri per far scorrere i pezzi',
   },
 
   sequenza: {
+    pezzi: '10 pezzi',
     inStampa: 'In stampa',
     stampato: 'Stampato',
     strati: 'strati',

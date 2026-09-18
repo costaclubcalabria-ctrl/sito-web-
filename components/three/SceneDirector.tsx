@@ -20,7 +20,7 @@ export function SceneDirector({ settings }: { settings: QualitySettings }) {
   const rotta = useScene((s) => s.rotta)
 
   // Il profilo di qualità decide quanti oggetti la scena può permettersi.
-  const prodotti = useMemo(() => getFeatured(Math.min(4, settings.maxOggetti)), [settings.maxOggetti])
+  const prodotti = useMemo(() => getFeatured(Math.min(6, settings.maxOggetti)), [settings.maxOggetti])
 
   if (settings.maxOggetti === 0) return null
 

@@ -19,14 +19,12 @@ export interface FrameState {
   tiltY: number
   /** Progresso dell'animazione di genesi, 0 → 1. */
   genesi: number
-  /** Profondità nella sezione stratigrafica, 0 (superficie) → 1 (basalto). */
-  profondita: number
   /**
-   * Quanto è stampato l'oggetto a fuoco, 0 → 1.
-   * Lo scrive la sequenza della home leggendo lo scroll: è il canale con cui
-   * lo scroll diventa la testina di stampa (DESIGN.md §6).
+   * Posizione della fila di pezzi (`s` in lib/fiume.ts).
+   * È l'unico canale fra lo scroll del DOM e la scena 3D: la scena legge questo
+   * numero e nient'altro.
    */
-  stampa: number
+  fiume: number
 }
 
 export const frame: FrameState = {
@@ -36,8 +34,7 @@ export const frame: FrameState = {
   tiltX: 0,
   tiltY: 0,
   genesi: 0,
-  profondita: 0,
-  stampa: 0,
+  fiume: 0,
 }
 
 /** Interpolazione indipendente dal frame rate: stessa sensazione a 30 e a 120 fps. */

@@ -4,39 +4,36 @@ import type { ComponentProps, ReactNode } from 'react'
 /**
  * I controlli.
  *
- * Rettangoli, non pillole: un oggetto stampato ha spigoli, e tutto il sistema
- * di forme del sito discende da quello. L'unico raggio ammesso è uno strato.
+ * Sono di vetro come il resto dell'interfaccia, tranne la primaria: quella è
+ * piena, perché un'azione principale che si vede attraverso non è un'azione
+ * principale.
  *
- * - `primaria`: pieno inchiostro (o carta sugli strati profondi). Una per schermata.
- * - `secondaria`: solo contorno.
+ * - `primaria`: inchiostro pieno. Una per schermata.
+ * - `vetro`: lastra sottile con bordo speculare.
  * - `ugello`: il colore della testina. Solo per l'azione che produce qualcosa —
  *   chiedere un preventivo, avviare una lavorazione. Mai per "vedi tutti".
  * - `fantasma`: testo con linea sotto.
  */
-export type PillVariant = 'primaria' | 'secondaria' | 'ugello' | 'fantasma'
+export type PillVariant = 'primaria' | 'vetro' | 'ugello' | 'fantasma'
 
 const BASE =
-  'group/ctrl inline-flex items-center justify-center gap-2 font-medium ' +
-  'transition-[background-color,color,border-color,box-shadow,translate] duration-200 ' +
-  'min-h-11 px-6 text-[0.9375rem] leading-none select-none rounded-[var(--radius-strato)] ' +
+  'inline-flex items-center justify-center gap-2 font-medium select-none ' +
+  'min-h-11 px-6 text-[0.9375rem] leading-none rounded-full ' +
+  'transition-[background-color,color,box-shadow,translate] duration-200 ' +
   'disabled:opacity-50 disabled:pointer-events-none'
 
 const VARIANTI: Record<PillVariant, string> = {
-  // L'ombra secca a due strati e il suo annullarsi alla pressione: il controllo
-  // si "appoggia" e si "posa". Nessuna transizione di scala, nessun rimbalzo.
   primaria:
-    'bg-[var(--ink-corrente)] text-[var(--bg-corrente)] ' +
-    'shadow-[var(--strato)_var(--strato)_0_var(--linea-corrente)] ' +
-    'hover:translate-x-px hover:translate-y-px hover:shadow-none',
-  secondaria:
-    'border border-[var(--linea-corrente)] text-[var(--ink-corrente)] ' +
-    'hover:bg-[var(--ink-corrente)] hover:text-[var(--bg-corrente)]',
+    'bg-ink text-white shadow-[0_1px_2px_rgb(20_20_28/0.2),0_10px_22px_-10px_rgb(20_20_28/0.45)] ' +
+    'hover:bg-carbone hover:-translate-y-px',
+  vetro:
+    'vetro !rounded-full text-ink hover:bg-white/60',
   ugello:
-    'bg-ugello text-paper shadow-[var(--strato)_var(--strato)_0_rgb(23_22_26_/_0.22)] ' +
-    'hover:translate-x-px hover:translate-y-px hover:shadow-none',
+    'bg-ugello text-white shadow-[0_1px_2px_rgb(180_40_10/0.3),0_10px_22px_-10px_rgb(255_77_31/0.6)] ' +
+    'hover:-translate-y-px hover:brightness-105',
   fantasma:
-    'px-0 text-[var(--ink-corrente-soft)] underline decoration-[var(--linea-corrente)] ' +
-    'underline-offset-4 hover:text-[var(--ink-corrente)] hover:decoration-[var(--color-ugello)]',
+    'px-0 text-ink-soft underline decoration-ink-muted/50 underline-offset-4 ' +
+    'hover:text-ink hover:decoration-ugello',
 }
 
 export function Pill({
