@@ -50,9 +50,16 @@ export default function Home() {
 
       {/* ------------------------------------------------- 000 mm · Gesso -- */}
       <span id="strato-gesso" className="sr-only" />
-      <span id="strato-sabbia" className="sr-only" />
 
-      <div data-sequenza>
+      {/*
+        Gli ancoraggi degli strati sono **posizioni reali** nel documento, non
+        etichette: `Stratigrafia.tsx` misura dove cadono e interpola il
+        materiale fra due consecutivi. Metterli tutti in cima faceva partire la
+        quota da 45 mm invece di 0 — quindi "sabbia" sta dove sabbia comincia
+        davvero, a meta della sequenza.
+      */}
+      <div data-sequenza className="relative">
+        <span id="strato-sabbia" className="sr-only absolute top-[42%]" aria-hidden="true" />
         <HomeSequence slugs={sequenza.map((p) => p.slug)} hero={<Hero />}>
           {sequenza.map((p, i) => (
             <ProductPanel

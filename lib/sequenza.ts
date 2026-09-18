@@ -53,8 +53,12 @@ export function fuoco(i: number, t: number): number {
  */
 export function stampa(i: number, t: number): number {
   const centro = centroFuoco(i)
-  const inizio = centro - 0.15
-  const fine = centro - 0.01
+  // ⚠️ Questa finestra deve stare **dentro la sosta** della linea
+  // (`percorso.ts`, `conSosta`): un pezzo che si stampa mentre trasla e
+  // fisicamente assurdo e si nota subito. Con sosta 0.36 in unita di indice,
+  // il pezzo e fermo per |t - centro| <= 0.072: la stampa sta dentro.
+  const inizio = centro - 0.068
+  const fine = centro - 0.012
   if (t <= inizio) return 0
   if (t >= fine) return 1
   const v = (t - inizio) / (fine - inizio)

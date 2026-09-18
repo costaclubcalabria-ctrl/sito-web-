@@ -130,7 +130,7 @@ export function ProductObject({
       // Il raggio dell'anello segue la sagoma in modo approssimativo: allargarsi
       // verso il centro dell'oggetto e stringersi in cima è più credibile di un
       // anello di raggio costante.
-      const r = 0.34 + Math.sin(Math.PI * s) * 0.12
+      const r = 0.27 + Math.sin(Math.PI * s) * 0.11
       testina.current.scale.setScalar(r / 0.4)
     }
 

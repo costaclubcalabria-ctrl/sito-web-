@@ -73,6 +73,9 @@ export function HomeSequence({
       return
     }
 
+    // Acceso di default: la sequenza comincia in cima alla pagina.
+    document.documentElement.dataset['scena'] = '1'
+
     const pannelli = Array.from(root.querySelectorAll<HTMLElement>('[data-pannello]'))
     const heroEl = heroRef.current
     let ultimoIndice = -1
@@ -169,6 +172,24 @@ export function HomeSequence({
         start: 'top top',
         end: 'bottom bottom',
         onUpdate: (self) => applica(self.progress),
+        /*
+         * Superata la sequenza la scena non ha piu niente da dire: se resta
+         * accesa, l'ultimo pezzo rimane appeso al bordo dello schermo per
+         * tutta la parte bassa della pagina.
+         *
+         * `onLeave`/`onEnterBack` e non `onToggle`: all'apertura il trigger
+         * non e ancora "attivo" — comincia esattamente a scrollY 0 — e con
+         * onToggle il palco partiva spento, quindi il pezzo dell'hero non si
+         * vedeva affatto.
+         *
+         * Un attributo su :root, non uno stato React: il CSS fa la dissolvenza.
+         */
+        onLeave: () => {
+          document.documentElement.dataset['scena'] = '0'
+        },
+        onEnterBack: () => {
+          document.documentElement.dataset['scena'] = '1'
+        },
       })
 
       applica(st.progress)
@@ -180,6 +201,7 @@ export function HomeSequence({
       smontato = true
       root.removeEventListener('focusin', onFocusIn)
       st?.kill()
+      delete document.documentElement.dataset['scena']
       frame.scroll = 0
       frame.stampa = 0
     }

@@ -80,7 +80,7 @@ export function Stage() {
 
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-[2]"
+      className="palco pointer-events-none fixed inset-0 z-[2]"
       // La scena è decorativa: ogni informazione esiste anche come testo nel DOM.
       role="presentation"
       aria-label={t.a11y.scenaDecorativa}

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Il marchio ridotto al suo minimo: strati depositati, e l'ultimo, quello
+       che la testina sta ancora posando, nel colore dell'ugello. -->
+  <rect width="32" height="32" fill="#EDE7DA"/>
+  <g fill="#17161A">
+    <rect x="6" y="22" width="20" height="3"/>
+    <rect x="7" y="17" width="18" height="3"/>
+    <rect x="9" y="12" width="14" height="3"/>
+  </g>
+  <rect x="11" y="7" width="10" height="3" fill="#FF4D1F"/>
+</svg>

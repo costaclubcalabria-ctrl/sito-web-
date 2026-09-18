@@ -468,3 +468,16 @@
     -webkit-text-fill-color: transparent;
   }
 }
+
+/* ============================================================================
+   Il palco 3D esiste solo dove serve.
+   Fuori dalla sequenza dei prodotti la scena non ha niente da dire, e un pezzo
+   appeso al bordo dello schermo sarebbe un difetto. L'attributo lo scrive
+   HomeSequence; qui c'e solo la dissolvenza.
+   ========================================================================= */
+.palco {
+  transition: opacity 320ms var(--ease-in-out-soft);
+}
+:root[data-scena='0'] .palco {
+  opacity: 0;
+}

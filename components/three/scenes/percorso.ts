@@ -25,7 +25,7 @@ export { centroFuoco, fuoco, opacitaPannello, stampa } from '@/lib/sequenza'
  */
 
 /** Distanza fra un pezzo e il successivo lungo la linea. */
-const PASSO_X = 4.2
+const PASSO_X = 3.4
 
 /**
  * Dove sta il pezzo a fuoco nell'inquadratura, in unità di scena.
@@ -69,34 +69,38 @@ export function posizioneLinea(t: number, comp: Composizione, out: THREE.Vector3
   const grezzo = Math.max(inizio, (t - 0.3) / 0.2)
 
   /*
-   * In verticale la linea non trasla in continuo: **sosta**.
+   * La linea non trasla in continuo: **sosta**.
    *
-   * Il motivo e' geometrico. La mezza larghezza inquadrata in verticale vale
-   * circa 1,16 unita contro le 2,5 dell'orizzontale: lo stesso spostamento
-   * laterale porta il pezzo fuori campo in meta tempo. Con una traslazione
-   * lineare la scheda di un pezzo era ancora a schermo mentre il pezzo era
-   * gia mezzo tagliato dal bordo — testo e oggetto raccontavano due cose
-   * diverse, che e' il difetto peggiore di una scena guidata dallo scroll.
+   * L'idea della catena che passa senza fermarsi era piu elegante sulla carta,
+   * e sbagliata alla prova: la finestra in cui la scheda di un pezzo e
+   * leggibile e piu larga di quella in cui il pezzo resta inquadrato, quindi
+   * il testo parlava di un oggetto che era gia mezzo tagliato dal bordo. Testo
+   * e oggetto raccontavano due cose diverse — il difetto peggiore in una scena
+   * guidata dallo scroll, e proprio quello che la regola "leggono lo stesso
+   * numero" doveva impedire.
    *
-   * Quindi il pezzo resta fermo al centro per tutta la finestra in cui la sua
-   * scheda e' leggibile, e il passaggio al successivo avviene in fretta, nel
-   * varco fra le due schede.
+   * Quindi il pezzo resta fermo al punto di posa per tutta la durata della sua
+   * scheda, e il passaggio al successivo avviene in fretta, nel varco fra le
+   * due schede. In verticale la sosta e' piu lunga, perche la mezza larghezza
+   * inquadrata vale 1,16 unita contro le 2,3 dell'orizzontale: la stessa
+   * traslazione porta il pezzo fuori campo in meta tempo.
    */
-  const indice = verticale ? conSosta(grezzo) : grezzo
+  const indice = conSosta(grezzo, verticale ? 0.4 : 0.36)
 
   out.set(-indice * PASSO_X + posa, 0, 0)
 }
 
-/** Semiampiezza della sosta, in frazioni di passo. */
-const SOSTA = 0.3
-
-function conSosta(grezzo: number): number {
+/**
+ * Applica la sosta: piatta entro `sosta` dal punto di posa, poi il passaggio.
+ * @param sosta semiampiezza della sosta, in frazioni di passo (0 = nessuna).
+ */
+function conSosta(grezzo: number, sosta: number): number {
   const i = Math.round(grezzo)
   const d = grezzo - i
   const a = Math.abs(d)
-  if (a <= SOSTA) return i
+  if (a <= sosta) return i
   const verso = d < 0 ? -1 : 1
-  return i + verso * ((a - SOSTA) / (0.5 - SOSTA)) * 0.5
+  return i + verso * ((a - sosta) / (0.5 - sosta)) * 0.5
 }
 
 /** La camera. Fissa: cambia solo con il formato dello schermo. */
