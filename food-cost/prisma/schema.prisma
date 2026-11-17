@@ -1,0 +1,206 @@
+// Food cost — schema del database (SQLite).
+//
+// NOTA SUI NUMERI: SQLite non ha un tipo decimale esatto (li salverebbe come
+// numeri in virgola mobile). Per questo prezzi, quantità e percentuali sono
+// salvati come TESTO ("12.50") e calcolati solo con decimal.js. Mai float.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Accesso ─────────────────────────────
+
+model User {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id // token casuale
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+}
+
+// Una sola riga (id = 1).
+model Settings {
+  id                 Int    @id @default(1)
+  targetFoodCostPct  String @default("30") // food cost obiettivo, %
+  vatPct             String @default("10") // IVA sul prezzo a menù, %
+  targetReceipt      String @default("35") // scontrino medio obiettivo a persona, IVA inclusa
+}
+
+// ───────────────────────────── Fase 1 ─────────────────────────────
+
+model Supplier {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  ingredients Ingredient[]
+  purchases   Purchase[]
+}
+
+// Unità ammesse (campo testo): "kg", "g", "l", "ml", "pz".
+model Ingredient {
+  id            Int      @id @default(autoincrement())
+  name          String   @unique
+  category      String   @default("")
+  supplierId    Int?
+  supplier      Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  // Acquisto: `price` € (IVA esclusa) per `purchaseQty` `purchaseUnit`.
+  // Es. latta da 2,5 kg a 6,00 € -> purchaseQty "2.5", purchaseUnit "kg", price "6".
+  purchaseQty   String   @default("1")
+  purchaseUnit  String
+  price         String
+  yieldPct      String   @default("100") // resa %: quota utilizzabile dopo pulizia/cottura
+  pieceWeightG  String? // peso medio di un pezzo in grammi (per convertire pz <-> peso)
+  notes         String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  priceHistory   PriceHistory[]
+  recipeItems    RecipeItem[]
+  alerts         Alert[]
+  purchaseLines  PurchaseLine[]
+  inventoryLines InventoryLine[]
+}
+
+// Storico prezzi: una riga a ogni variazione delle condizioni di acquisto.
+model PriceHistory {
+  id           Int        @id @default(autoincrement())
+  ingredientId Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  date         DateTime   @default(now())
+  price        String
+  purchaseQty  String
+  purchaseUnit String
+
+  @@index([ingredientId, date])
+}
+
+// Semilavorati e piatti stanno nella stessa tabella: sono entrambi ricette.
+// type = "SEMILAVORATO" | "PIATTO"
+model Recipe {
+  id        Int      @id @default(autoincrement())
+  type      String
+  name      String
+  category  String   @default("")
+  notes     String   @default("")
+  // Solo semilavorato: resa del lotto (es. 5 kg di sugo).
+  batchQty     String?
+  batchUnit    String?
+  pieceWeightG String? // peso medio di un pezzo (es. una polpetta = 30 g)
+  // Solo piatto.
+  portions  Int?     // per quante persone basta il piatto in condivisione
+  menuPrice String?  // prezzo a menù del piatto intero, IVA INCLUSA
+  onMenu    Boolean  @default(true) // in carta / fuori carta
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items          RecipeItem[]    @relation("RecipeItems")
+  usedIn         RecipeItem[]    @relation("SubRecipe")
+  alerts         Alert[]
+  sales          DishSale[]
+  inventoryLines InventoryLine[]
+
+  @@unique([type, name])
+}
+
+// Riga di ricetta: un ingrediente OPPURE un semilavorato, con quantità NETTA.
+model RecipeItem {
+  id           Int         @id @default(autoincrement())
+  recipeId     Int
+  recipe       Recipe      @relation("RecipeItems", fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredientId Int?
+  ingredient   Ingredient? @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  subRecipeId  Int?
+  subRecipe    Recipe?     @relation("SubRecipe", fields: [subRecipeId], references: [id], onDelete: Restrict)
+  quantity     String
+  unit         String
+  position     Int         @default(0)
+
+  @@index([recipeId])
+}
+
+// Avviso: una variazione di prezzo ha portato un piatto sopra la soglia.
+model Alert {
+  id           Int        @id @default(autoincrement())
+  createdAt    DateTime   @default(now())
+  ingredientId Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  recipeId     Int
+  recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  oldPct       String
+  newPct       String
+  dismissed    Boolean    @default(false)
+}
+
+// ─────────────── Fase 2 (food cost reale) — solo struttura ───────────────
+// Tabelle già pronte, non ancora usate dall'interfaccia.
+// Consumo reale del periodo = inventario iniziale + acquisti − inventario finale.
+// Consumo teorico = Σ (piatti venduti × costo teorico). Scostamento = reale − teorico.
+
+model Purchase {
+  id         Int            @id @default(autoincrement())
+  date       DateTime
+  supplierId Int?
+  supplier   Supplier?      @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  docNumber  String         @default("") // numero bolla/fattura
+  notes      String         @default("")
+  lines      PurchaseLine[]
+}
+
+model PurchaseLine {
+  id           Int        @id @default(autoincrement())
+  purchaseId   Int
+  purchase     Purchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  ingredientId Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  quantity     String
+  unit         String
+  totalPrice   String // importo riga, IVA esclusa
+
+  @@index([ingredientId])
+}
+
+model InventoryCount {
+  id    Int             @id @default(autoincrement())
+  date  DateTime
+  notes String          @default("")
+  lines InventoryLine[]
+}
+
+// Giacenza contata: un ingrediente oppure un semilavorato già preparato.
+model InventoryLine {
+  id           Int            @id @default(autoincrement())
+  countId      Int
+  count        InventoryCount @relation(fields: [countId], references: [id], onDelete: Cascade)
+  ingredientId Int?
+  ingredient   Ingredient?    @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  recipeId     Int?
+  recipe       Recipe?        @relation(fields: [recipeId], references: [id], onDelete: Restrict)
+  quantity     String
+  unit         String
+  unitCost     String // costo unitario al momento del conteggio (fotografia)
+}
+
+model DishSale {
+  id              Int      @id @default(autoincrement())
+  date            DateTime
+  recipeId        Int
+  recipe          Recipe   @relation(fields: [recipeId], references: [id], onDelete: Restrict)
+  quantity        Int
+  menuPrice       String // prezzo applicato quel giorno, IVA inclusa (fotografia)
+  theoreticalCost String // costo teorico unitario quel giorno (fotografia)
+
+  @@index([date])
+  @@index([recipeId])
+}
