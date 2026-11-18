@@ -11,6 +11,13 @@ del repository.
 
 Serve Node.js 20.9 o successivo.
 
+**Modo rapido:** su Windows doppio clic su `avvia.bat`; su Mac e Linux
+`sh avvia.sh`. Fanno da soli installazione, database, build e avvio.
+Dopo un aggiornamento del codice, cancellare la cartella `.next` prima di
+riavviare.
+
+Passi manuali equivalenti:
+
 ```bash
 npm install
 ```
